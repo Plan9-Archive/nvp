@@ -1,0 +1,161 @@
+Crappy vm with vector instructions.
+
+This VM is a simplified virtual machine based off of the z3vm design.
+It has both scalar and vector operations and a minimal instruction
+set with very simple instruction encoding.
+
+Instructions are encoded into multiple 8 bit blocks
+[type|len] [instruction] [args...]
+
+Registers:
+	r0 to r7	-- the 32 bit general purpose registers (first set) (0x10-0x17)
+	s0 to s7	-- 32 bit general-ish purpose registers (second set) (0x18-0x1f)
+	v0 to v7	-- 256 bit (32 byte, 8 numbers) vector registers (0x20-0x27)
+	op			-- offset pointer (0x30)
+	pc			-- program counter (0x31)
+	sp			-- stack pointer (0x32)
+	fl			-- 32-bit condition register (0x33)
+	sy			-- syscall function address (0x34)
+note: the sx register set is conventionally used for arguments to
+	  subroutines.
+
+types:
+	# -- constant (in hex) (32-bits / 4 blocks)
+	$ -- address (32-bits / 4 blocks)
+	& -- scalar register (8-bits / 1 block)
+	@ -- vector register (8-bits / 1 block)
+virtual types:
+	*string -- replace label with address
+
+assembler directives:
+	;
+		line is a comment
+	.rstart
+		number addresses from 0 starting here
+	.rend
+		number addresses normally
+	.label string
+		replace this string with the last instructions address
+	.data string
+		string that follows are a list of numbers to be inserted into the program at this point
+	.vdata
+		string that follows are numbers to be placed in each member of a vector
+
+type 0xf: implementation specific instructions
+	0x10, 2: bp
+		breakpoint
+	0x11, 6: print address
+		print some string at address
+	0x12, 3: rfmt reg
+		print the formatted contents of register reg
+
+type 0x0: scalar register instructions
+	0x10, 7: loads reg address
+		loads memory at address into reg
+	0x11, 7: stores reg address
+		stores register to memory at address
+	0x12, 4: moves reg1 reg2
+		reg2 = reg1
+	0x13, 4: rloads reg1 reg2
+		loads memory at address in reg2 into reg1
+	0x14, 4: rstores reg1 reg2
+		stores reg1 at address in reg2
+	0x15, 3: push reg
+		mem[sp] = reg; sp++
+	0x16, 3: pop reg
+		sp--; mem[sp] = reg
+	0x17, 7: loadc reg constant
+		reg = constant
+	0x18, 3: clrs reg
+		clear register
+
+type 0x1: vector register instructions
+	0x10, 7: loadv vreg address
+		vector version of loads
+	0x11, 7: storev vreg address
+		vector version of stores
+	0x12, 4: movev vreg1 vreg2
+		vector version of moves
+	0x13, 4: rloadv vreg1 reg2
+		vector version of rloads
+	0x14, 4: rstorev vreg1 reg2
+		vector version of rstores
+	0x15, 5:rloadsv reg1 vreg2 reg3
+		reg1 = vreg2[reg3]
+	0x16, 5: rstoresv vreg1 reg2 reg3
+		vreg1[reg3] = reg2
+	0x17, 3: clrv vreg
+		clear register
+
+type 0x2: control flow and other instructions
+	0xff, 2: nop
+		no-op. do nothing
+	0x10, 6: jmp address
+		pc = address
+	0x11, 6: rjmp address
+		pc = op + address
+	0x12, 3: jmpr reg
+		pc = reg
+	0x13, 3: rjmpr reg
+		pc = op + reg
+	0x14, 2: clrf
+		set fl to 0
+	0x15, 6: cjmp address
+		if fl > 0 then fl = 0 and pc = address
+	0x16, 6: crjmp address
+		if fl > 0 then fl = 0 and pc = op + address
+	0x17, 3: cjmpr reg
+		if fl > 0 then fl = 0 and pc = reg
+	0x18, 3: crjmpr reg
+		if fl > 0 then fl = 0 and pc = op + reg
+	0x19, 6: setsys address
+		sy = address
+	0x1a, 2: syscall
+		increment pc and push it then set pc to sy
+	0x1b, 6: call address
+		increment pc and push it then set pc to address
+	0x1c, 6: rcall address
+		increment pc and push it then set pc to op + address
+	0x1d, 2: return
+		pop pc
+	0x1f, 2: halt
+		halt execution (implementation specific. must be implemented)
+
+type 0x3: scalar math
+	0x10, 4: eqs reg1 reg2
+		if reg1 == reg2 then fl = 1
+	0x11, 4: gts reg1 reg2
+		if reg1 > reg2 then fl = 1
+	0x12, 4: lts reg1 reg2
+		if reg1 < reg2 then fl = 1
+	0x13, 5: adds reg1 reg2 reg3
+		reg1 = reg2 + reg3
+	0x14, 5: subs reg1 reg2 reg3
+		reg1 = reg2 - reg3
+	0x15, 5: muls reg1 reg2 reg3
+		reg1 = re2 * reg3
+	0x16, 5: divs reg1 reg2 reg3
+		reg1 = reg2 / reg3
+	0x17, 5: mods reg1 reg2 reg3
+		reg1 = reg2 % reg3
+	0x18, 3: nands reg1 reg2 reg2
+		reg1 = ~(reg2 & reg3)
+
+type 0x4: vector math
+note: vector math does not support overflows
+	0x10, 4: eqv reg1 reg2
+		if reg1 == reg2 then fl = 1
+	0x11, 4: gtv reg1 reg2
+		if reg1 > reg2 then fl = 1
+	0x12, 4: ltv reg1 reg2
+		if reg1 < reg2 then fl = 1
+	0x13, 5: addv reg1 reg2 reg3
+		reg1 = reg2 + reg3
+	0x14, 5: subv reg1 reg2 reg3
+		reg1 = reg2 - reg3
+	0x15, 5: mulv reg1 reg2 reg3
+		reg1 = re2 * reg3
+	0x16, 5: divv reg1 reg2 reg3
+		reg1 = reg2 / reg3
+	0x17, 5: modv reg1 reg2 reg3
+		reg1 = reg2 % reg3
