@@ -45,7 +45,7 @@ extern Data *datas;
 extern char *panicfn;
 extern Instdef insts[];
 
-#define E(a) panicfn=a; if(debug){fprint(2, "entering: %s\n", a); }
+#define E(a) panicfn=a; if(0){fprint(2, "entering: %s\n", a); }
 #define DEBUG(a) if(debug){ fprint(2, "debug: %s\n", a); }
 
 Inst* getinstr(char*);
@@ -63,7 +63,9 @@ void encode32int(u32int, u8int*);
 Instd* encodeinst(Inst*);
 Instd* encodedata(Data*);
 void generateoutput(void);
-int dumpoutput(Biobuf*);
+int dumpoutput(int);
 void usage(void);
 
-
+void dumpsrc(void);
+void dumpdata(void);
+void dumplabels(void);

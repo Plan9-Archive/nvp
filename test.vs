@@ -18,7 +18,7 @@
 .label loop
 	clrf
 	loadc r0 0
-	eq s0 r0
+	eqs s0 r0
 	cjmp *done
 	addv v2 v0 v1
 	subv v3 v0 v1

@@ -11,4 +11,3 @@ syntax: glob
 8.out
 6.out
 5.out
-*.acid

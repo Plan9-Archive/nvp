@@ -17,61 +17,64 @@ char *panicfn;
 
 Instdef insts[] = {
 	// scalar mem
-[0]		{"loads", CATSMEM, LOADS, 7},
-[1]		{"stores", CATSMEM, STORES, 7},
-[2]		{"moves", CATSMEM, MOVES, 4},
-[3]		{"rloads", CATSMEM, RLOADS, 4},
-[4]		{"rstores", CATSMEM, RSTORES, 4},
-[5]		{"push", CATSMEM, PUSH, 3},
-[6]		{"pop", CATSMEM, POP, 3},
-[7]		{"loadc", CATSMEM, LOADC, 7},
+		{"loads", CATSMEM, LOADS, 7},
+	{"stores", CATSMEM, STORES, 7},
+	{"moves", CATSMEM, MOVES, 4},
+	{"rloads", CATSMEM, RLOADS, 4},
+	{"rstores", CATSMEM, RSTORES, 4},
+	{"push", CATSMEM, PUSH, 3},
+	{"pop", CATSMEM, POP, 3},
+	{"loadc", CATSMEM, LOADC, 7},
 	// vector mem
-[8]		{"clrs", CATSMEM, CLRS, 3},
-[9]		{"loadv", CATVMEM, LOADV, 7},
-[10]	{"storev", CATVMEM, STOREV, 7},
-[11]	{"movev", CATVMEM, MOVEV, 4},
-[12]	{"rloadv", CATVMEM, RLOADV, 4},
-[13]	{"rstorev", CATVMEM, RSTOREV, 4},
-[14]	{"rloadsv", CATVMEM, RLOADSV, 5},
-[15]	{"rstoresv", CATVMEM, RSTORESV, 5},
-[16]	{"clrv", CATVMEM, CLRV, 3},
+	{"clrs", CATSMEM, CLRS, 3},
+	{"loadv", CATVMEM, LOADV, 7},
+	{"storev", CATVMEM, STOREV, 7},
+	{"movev", CATVMEM, MOVEV, 4},
+	{"rloadv", CATVMEM, RLOADV, 4},
+	{"rstorev", CATVMEM, RSTOREV, 4},
+	{"rloadsv", CATVMEM, RLOADSV, 5},
+	{"rstoresv", CATVMEM, RSTORESV, 5},
+	{"clrv", CATVMEM, CLRV, 3},
 	// control flow
-[17]	{"nop", CATCTL, NOP, 2},
-[18]	{"jmp", CATCTL, JMP, 6},
-[19]	{"rjmp", CATCTL, RJMP, 6},
-[20]	{"jmpr", CATCTL, JMPR, 3},
-[21]	{"rjmpr", CATCTL, RJMPR, 3},
-[22]	{"clrf", CATCTL, CLRF, 2},
-[23]	{"cjmp", CATCTL, CJMP, 6},
-[24]	{"crjmp", CATCTL, CRJMP, 6},
-[25]	{"cjmpr", CATCTL, CJMPR, 3},
-[26]	{"crjmpr", CATCTL, CRJMPR, 3},
-[27]	{"setsys", CATCTL, SETSYS, 6},
-[28]	{"syscall", CATCTL, SYSCALL, 2},
-[29]	{"call", CATCTL, CALL, 6},
-[30]	{"rcall", CATCTL, RCALL, 6},
-[31]	{"return", CATCTL, RETURN, 2},
-[32]	{"halt", CATCTL, HALT, 2},
+	{"nop", CATCTL, NOP, 2},
+	{"jmp", CATCTL, JMP, 6},
+	{"rjmp", CATCTL, RJMP, 6},
+	{"jmpr", CATCTL, JMPR, 3},
+	{"rjmpr", CATCTL, RJMPR, 3},
+	{"clrf", CATCTL, CLRF, 2},
+	{"cjmp", CATCTL, CJMP, 6},
+	{"crjmp", CATCTL, CRJMP, 6},
+	{"cjmpr", CATCTL, CJMPR, 3},
+	{"crjmpr", CATCTL, CRJMPR, 3},
+	{"setsys", CATCTL, SETSYS, 6},
+	{"syscall", CATCTL, SYSCALL, 2},
+	{"call", CATCTL, CALL, 6},
+	{"rcall", CATCTL, RCALL, 6},
+	{"return", CATCTL, RETURN, 2},
+	{"halt", CATCTL, HALT, 2},
 	// scalar math
-[33]	{"eqs", CATSMATH, EQS, 4},
-[34]	{"gts", CATSMATH, GTS, 4},
-[35]	{"lts", CATSMATH, LTS, 4},
-[36]	{"adds", CATSMATH, ADDS, 5},
-[37]	{"subs", CATSMATH, SUBS, 5},
-[38]	{"muls", CATSMATH, MULS, 5},
-[39]	{"divs", CATSMATH, DIVS, 5},
-[40]	{"mods", CATSMATH, MODS, 5},
-[41]	{"nands", CATSMATH, NANDS, 5},
+	{"eqs", CATSMATH, EQS, 4},
+	{"gts", CATSMATH, GTS, 4},
+	{"lts", CATSMATH, LTS, 4},
+	{"adds", CATSMATH, ADDS, 5},
+	{"subs", CATSMATH, SUBS, 5},
+	{"muls", CATSMATH, MULS, 5},
+	{"divs", CATSMATH, DIVS, 5},
+	{"mods", CATSMATH, MODS, 5},
+	{"nands", CATSMATH, NANDS, 5},
 	// vector math
-[42]	{"eqv", CATVMATH, EQV, 4},
-[43]	{"gtv", CATVMATH, GTV, 4},
-[44]	{"ltv", CATVMATH, LTV, 4},
-[45]	{"addv", CATVMATH, ADDV, 5},
-[46]	{"subv", CATVMATH, SUBV, 5},
-[47]	{"mulv", CATVMATH, MULV, 5},
-[48]	{"divv", CATVMATH, DIVV, 5},
-[49]	{"modv", CATVMATH, MODV, 5},
-[50]	{nil, 0, 0, 0},
+	{"eqv", CATVMATH, EQV, 4},
+	{"gtv", CATVMATH, GTV, 4},
+	{"ltv", CATVMATH, LTV, 4},
+	{"addv", CATVMATH, ADDV, 5},
+	{"subv", CATVMATH, SUBV, 5},
+	{"mulv", CATVMATH, MULV, 5},
+	{"divv", CATVMATH, DIVV, 5},
+	{"modv", CATVMATH, MODV, 5},
+	// implementation specific
+	{"bp", CATIMPL, BP, 2},
+	{"print", CATIMPL, PRINT, 6},
+	{"rfmt", CATIMPL, RFMT, 3},
 };
 
 char *regs[] = {
@@ -100,12 +103,71 @@ emalloc(uvlong sz)
 	v = malloc(sz);
 	if(!v)
 		panic("bad malloc");
-	DEBUG(smprint("v = %p", v));
-	DEBUG("setmalloctag");
 	setmalloctag(v, getcallerpc(&sz));
-	DEBUG("memset");
 	memset(v, 0, sz);
 	return v;
+}
+
+void
+dumpsrc(void)
+{
+	E("dumpsrc");
+	Inst *cur;
+	int i;
+
+	if(src == nil){
+		fprint(2, "no instructions to dump");
+		return;
+	}
+	for(cur = src; cur != nil; cur = cur->next){
+		fprint(2, "Inst (%p){\n", cur);
+		fprint(2, "\tlen = %d,\n\tslen = %d,\n", cur->len, cur->slen);
+		fprint(2, "\traw = '%s',\n", cur->raw);
+		fprint(2, "\tinst = '%s',\n", cur->inst);
+		fprint(2, "\targs = {\n");
+		for(i = 0; i < (cur->slen-1); i++)
+			fprint(2, "\t\t[%d] = %s,\n", i, cur->args[i]);
+		fprint(2, "\t}\n");
+		fprint(2, "\tnext = %p\n}\n\n", cur->next);
+	}
+}
+
+void
+dumpdata(void)
+{
+	E("dumpdata");
+	Data *cur;
+
+	if(datas == nil){
+		fprint(2, "no data to dump");
+		return;
+	}
+	for(cur = datas; cur != nil; cur = cur->next)
+		fprint(2, "Data (%p){ addr = %ux, dat = %ux, next = %p }\n",
+				cur, cur->addr, cur->dat, cur->next);
+}
+
+void
+dumplabels(void)
+{
+	E("dumplabels");
+	Label *cur;
+
+	if(labels == nil){
+		fprint(2, "no labels to dump\n");
+		return;
+	}
+	for(cur = labels; cur != nil; cur = cur->next)
+		fprint(2, "Label (%p){ name = %s, addr = %ux, next = %p }\n",
+				cur, cur->name, cur->addr, cur->next);
+}
+
+void
+dumpall(void)
+{
+	dumpsrc();
+	dumplabels();
+	dumpdata();
 }
 
 Inst*
@@ -122,6 +184,7 @@ getinstr(char *str)
 	if(inst->raw == nil || tmp == nil)
 		panic("bad malloc");
 	slen = tokenize(tmp, sline, maxinst);
+	assert(slen > 0);
 	inst->slen = slen;
 	inst->inst = sline[0];
 	inst->args = emalloc(sizeof(char*)*(slen-1));
@@ -137,8 +200,7 @@ normalizeinst(Inst *inst)
 	E("normalizeinst");
 	int i;
 
-	for(i = 0; i < 52; i++){
-		DEBUG(smprint("inst %s, checking with %s", inst->inst, insts[i].name));
+	for(i = 0; i < nelem(insts); i++){
 		if(strcmp(inst->inst, insts[i].name) == 0){
 			inst->len = insts[i].len;
 			return;
@@ -171,7 +233,7 @@ decodeaddr(char *str)
 	E("decodeaddr");
 	if(str[0] == '*')
 		return labeltoaddr(&str[1]);
-	return atoi(str);
+	return strtoul(str, nil, 16);
 }
 
 void
@@ -181,10 +243,15 @@ addlabel(char *name, u32int addr)
 	Label *cur;
 
 	cur = labels;
-	while(cur->next != nil)
+	if(cur != nil){
+		while(cur->next != nil)
+			cur = cur->next;
+		cur->next = emalloc(sizeof(Label));
 		cur = cur->next;
-	cur->next = emalloc(sizeof(Label));
-	cur = cur->next;
+	} else {
+		labels = emalloc(sizeof(Label));
+		cur = labels;
+	}
 	cur->name = strdup(name);
 	cur->addr = addr;
 }
@@ -202,8 +269,12 @@ handleinst(char *str)
 		while(cur->next != nil)
 			cur = cur->next;
 		cur->next = inst;
-	} else
+		DEBUG(smprint("comp: adding inst %s (cur = %p, inst = %p)", inst->inst, cur, inst));
+	} else {
+		DEBUG("initializing src");
 		src = inst;
+		DEBUG(smprint("comp: adding inst %s (%p)", inst->inst, src));
+	}
 	addrcnt += inst->len;
 }
 
@@ -235,6 +306,7 @@ handlepreproc(char *str)
 	int toksl;
 	int i;
 
+	DEBUG(smprint("preproc: %s", str));
 	toksl = tokenize(str, toks, 9);
 	if(strcmp(".start", toks[0]) == 0){
 		addrcnt = 0;
@@ -245,13 +317,12 @@ handlepreproc(char *str)
 		return;
 	}
 	if(strcmp(".data", toks[0]) == 0){
-		adddata(atoi(toks[1]));
+		adddata(strtoul(toks[1], nil, 16));
 		return;
 	}
 	if(strcmp(".vdata", toks[0]) == 0){
-		toksl--;
-		for(i = 0; i < toksl; i++)
-			adddata(atoi(toks[i+1]));
+		for(i = 1; i < toksl; i++)
+			adddata(strtoul(toks[i+1], nil, 16));
 		return;
 	}
 }
@@ -269,6 +340,8 @@ readsrcline(Biobuf *bf)
 	if(strcmp(str, ".eof") == 0)
 		return -2;
 	if(str[0] == ';')
+		return 0;
+	if(str[0] == '\0')
 		return 0;
 	if(str[0] == '.'){
 		handlepreproc(str);
@@ -331,16 +404,13 @@ encodeinst(Inst *inst)
 
 	einst = emalloc(sizeof(Instd));
 	def = getinstdef(inst->inst);
+	DEBUG(smprint("encoding: %s (len = %ud, slen = %ud)", inst->inst, inst->len, inst->slen));
+	DEBUG(smprint("encoding: raw = %s", inst->raw));
 	einst->otype = 0;
 	einst->type = def->type;
 	einst->len = def->len;
-	for(i = 0; i < inst->slen; i++){
-		if(*inst->args[i] == 'r' ||
-		 *inst->args[i] == 'v' ||
-		 *inst->args[i] == 's' ||
-		 *inst->args[i] == 'o' ||
-		 *inst->args[i] == 'p' ||
-		 strcmp(inst->args[i], "fl") == 0){
+	for(i = 0; i < (inst->slen-1); i++){
+		if(strlen(inst->args[i]) == 2){
 			einst->args[iaddr] = getreg(inst->args[i]);
 			iaddr++;
 		} else {
@@ -367,6 +437,7 @@ void
 generateoutput(void)
 {
 	E("generateoutput");
+
 	u32int curaddr;
 	Inst *curinst;
 	Data *curdat;
@@ -376,54 +447,54 @@ generateoutput(void)
 	start = curout = emalloc(sizeof(Instd));
 	curinst = src;
 	curdat = datas;
-	curaddr = addrcnt;
+	curaddr = 0;
 	for(;;){
 		if(curdat != nil && curdat->addr == curaddr){
+			DEBUG(smprint("encoding data: addr = %ud, dat = %ux", curdat->addr, curdat->dat));
 			curout->next = encodedata(curdat);
 			curaddr += sizeof(u32int);
 			curdat = curdat->next;
 		} else if(curinst != nil){
+			DEBUG(smprint("encoding inst: addr = %ud, inst = %s", curaddr, curinst->inst));
 			curout->next = encodeinst(curinst);
 			curaddr += curinst->len;
 			curinst = curinst->next;
 		} else
 			break;
-		if(curinst->next == nil)
-			panic("no data generated");
 		curinst = curinst->next;
 	}
 	output = start->next;
 }
 
 int
-dumpoutput(Biobuf *bf)
+dumpoutput(int bf)
 {
 	E("dumpoutput");
 	Instd *cur;
 	u8int tmp;
 
 	cur = output;
+	if(cur == nil)
+		panic("no output generated");
 	while(cur != nil){
 		switch(cur->otype){
 		case 0:
 			tmp = cur->type + cur->len;
-			if(Bwrite(bf, &tmp, 1) < 1)
+			if(write(bf, &tmp, 1) < 1)
 				goto fail;
-			if(Bwrite(bf, &cur->inst, 1) < 1)
+			if(write(bf, &cur->inst, 1) < 1)
 				goto fail;
 			if(cur->len - 2 > 0)
-				if(Bwrite(bf, &cur->args[0], (cur->len - 2)) < (cur->len - 2))
+				if(write(bf, &cur->args[0], (cur->len - 2)) < (cur->len - 2))
 					goto fail;
 			break;
 		case 1:
-			if(Bwrite(bf, &cur->dat[0], 4) < 4)
+			if(write(bf, &cur->dat[0], 4) < 4)
 				goto fail;
 			break;
 		}
 		cur = cur->next;
 	}
-	if(!Bflush(bf))
-		panic("could not flush output file");
 	return 0;
 fail:
 	panic("could not write instruction to file");
@@ -442,8 +513,9 @@ main(int argc, char *argv[])
 {
 	E("main");
 	char *srcfile = nil, *outfile = nil;
-	Biobuf *srcfd, *outfd;
-	int st = 0;
+	Biobuf *srcfd;
+	int outfd;
+	int st;
 
 	ARGBEGIN{
 	case 'd':
@@ -464,15 +536,23 @@ main(int argc, char *argv[])
 		usage();
 
 	srcfd = Bopen(srcfile, OREAD);
-	outfd = Bopen(outfile, OWRITE);
+	outfd = open(outfile, OWRITE);
 	if(!srcfd || !outfd)
 		panic("could not open src or output files");
 	
-	while(st != -1 || st != -2)
+	for(;;){
 		st = readsrcline(srcfd);
+		if(st == -2)
+			break;
+		if(st == -1)
+			panic("general read error");
+	}
+	dumpall();
+	panic("not continuing");
+	generateoutput();
 	if(dumpoutput(outfd) != 0)
 		panic("could not dump the assembled file");
 	Bterm(srcfd);
-	Bterm(outfd);
+	close(outfd);
 	exits(nil);
 }

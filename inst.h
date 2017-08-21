@@ -79,4 +79,8 @@ enum {
 	MULV	= 0x15,
 	DIVV	= 0x16,
 	MODV	= 0x17,
+	// implementation specific
+	BP		= 0x10,
+	PRINT	= 0x11,
+	RFMT	= 0x12,
 };
