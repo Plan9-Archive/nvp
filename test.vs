@@ -11,9 +11,7 @@
 .label numloops
 .data c350
 
-.rstart
 .label start
-	loadc op *RSTART
 	loadv v0 *vect1
 	loadv v1 *vect2
 	loads s0 *numloops
@@ -21,7 +19,7 @@
 	clrf
 	loadc r0 0
 	eq s0 r0
-	crjmp *done
+	cjmp *done
 	addv v2 v0 v1
 	subv v3 v0 v1
 	mulv v4 v0 v1
@@ -29,7 +27,7 @@
 	bp
 	loadc r0 1
 	subs s0 s0 r0
-	rjmp *loop
-.label *done
+	jmp *loop
+.label done
 	halt
-.rend
+.eof

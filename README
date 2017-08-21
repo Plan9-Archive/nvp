@@ -30,18 +30,18 @@ virtual types:
 assembler directives:
 	;
 		line is a comment
-	.rstart
-		number addresses from 0 starting here
-	.rend
-		number addresses normally
+	.start string
+		begin address counting at string
 	.label string
 		replace this string with the last instructions address
 	.data string
-		string that follows are a list of numbers to be inserted into the program at this point
+		string that follows are a number to be inserted into the program at this point
 	.vdata
 		string that follows are numbers to be placed in each member of a vector
+	.eof
+		denotes the end of the source file
 
-type 0xf: implementation specific instructions
+type 0xf: implementation specific instructions (catimpl)
 	0x10, 2: bp
 		breakpoint
 	0x11, 6: print address
@@ -49,7 +49,7 @@ type 0xf: implementation specific instructions
 	0x12, 3: rfmt reg
 		print the formatted contents of register reg
 
-type 0x0: scalar register instructions
+type 0x0: scalar register instructions (catsmem)
 	0x10, 7: loads reg address
 		loads memory at address into reg
 	0x11, 7: stores reg address
@@ -69,7 +69,7 @@ type 0x0: scalar register instructions
 	0x18, 3: clrs reg
 		clear register
 
-type 0x1: vector register instructions
+type 0x1: vector register instructions (catvmem)
 	0x10, 7: loadv vreg address
 		vector version of loads
 	0x11, 7: storev vreg address
@@ -87,7 +87,7 @@ type 0x1: vector register instructions
 	0x17, 3: clrv vreg
 		clear register
 
-type 0x2: control flow and other instructions
+type 0x2: control flow and other instructions (catctl)
 	0xff, 2: nop
 		no-op. do nothing
 	0x10, 6: jmp address
@@ -121,7 +121,7 @@ type 0x2: control flow and other instructions
 	0x1f, 2: halt
 		halt execution (implementation specific. must be implemented)
 
-type 0x3: scalar math
+type 0x3: scalar math (catsmath)
 	0x10, 4: eqs reg1 reg2
 		if reg1 == reg2 then fl = 1
 	0x11, 4: gts reg1 reg2
@@ -138,10 +138,10 @@ type 0x3: scalar math
 		reg1 = reg2 / reg3
 	0x17, 5: mods reg1 reg2 reg3
 		reg1 = reg2 % reg3
-	0x18, 3: nands reg1 reg2 reg2
+	0x18, 5: nands reg1 reg2 reg3
 		reg1 = ~(reg2 & reg3)
 
-type 0x4: vector math
+type 0x4: vector math (catvmath)
 note: vector math does not support overflows
 	0x10, 4: eqv reg1 reg2
 		if reg1 == reg2 then fl = 1

@@ -1,5 +1,7 @@
 syntax: glob
 *.nvp
+*.vpasm
+*.vx
 *.6
 *.8
 *.5
