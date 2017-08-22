@@ -94,3 +94,8 @@ Vect* getvreg(Cpu*, u32int);
 void sendvectop(Cpu*, Inst*);
 void sendvectmemop(Cpu*, Inst*);
 void sendvectmathop(Cpu*, Inst*);
+
+// debug.c
+extern int debug;
+void dprint(char*);
+void panic(char*);

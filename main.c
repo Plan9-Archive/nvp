@@ -84,6 +84,9 @@ threadmain(int argc, char *argv[])
 	case 's':
 		start = atoi(EARGF(usage()));
 		break;
+	case 'd':
+		debug = 1;
+		break;
 	case 'h':
 		usage();
 		break;

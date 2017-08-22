@@ -179,7 +179,7 @@ docontrolop(Cpu *c, Inst *inst)
 {
 	u32int *reg1;
 	u32int addr;
-	u32int *sp, *sy, *fl, *pc, *op;
+	u32int *sp, *sy, *fl, (*pc), *op;
 
 	sp = getregister(c, SP);
 	sy = getregister(c, SY);
@@ -188,18 +188,18 @@ docontrolop(Cpu *c, Inst *inst)
 	op = getregister(c, OP);
 	switch(inst->op){
 	case 0x10: // jmp
-		*pc = inst->args[0];
+		(*pc) = inst->args[0];
 		break;
 	case 0x11: // rjmp
-		*pc = *op+inst->args[0];
+		(*pc) = *op+inst->args[0];
 		break;
 	case 0x12: // jmpr
 		reg1 = getregister(c, inst->args[0]);
-		*pc = *reg1;
+		(*pc) = *reg1;
 		break;
 	case 0x13: // rjmpr
 		reg1 = getregister(c, inst->args[0]);
-		*pc = *op+*reg1;
+		(*pc) = *op+*reg1;
 		break;
 	case 0x14: // clrf
 		*fl = 0;
@@ -208,14 +208,14 @@ docontrolop(Cpu *c, Inst *inst)
 		addr = inst->args[0];
 		if(*fl > 0){
 			*fl = 0;
-			*pc = addr;
+			(*pc) = addr;
 		}
 		break;
 	case 0x16: // crjmp
 		addr = inst->args[0]+*op;
 		if(*fl > 0){
 			*fl = 0;
-			*pc = addr;
+			(*pc) = addr;
 		}
 		break;
 	case 0x17: // cjmpr
@@ -223,7 +223,7 @@ docontrolop(Cpu *c, Inst *inst)
 		addr = *reg1;
 		if(*fl > 0){
 			*fl = 0;
-			*pc = addr;
+			(*pc) = addr;
 		}
 		break;
 	case 0x18: // crjmpr
@@ -231,7 +231,7 @@ docontrolop(Cpu *c, Inst *inst)
 		addr = *reg1+*op;
 		if(*fl > 0){
 			*fl = 0;
-			*pc = addr;
+			(*pc) = addr;
 		}
 		break;
 	case 0x19: // setsys
@@ -242,24 +242,24 @@ docontrolop(Cpu *c, Inst *inst)
 		addr = *sy;
 		writereg(c, pc, *sp);
 		(*sp)++;
-		*pc = *sy;
+		(*pc) = *sy;
 		break;
 	case 0x1b: // call
 		addr = inst->args[0];
 		writereg(c, pc, *sp);
 		(*sp)++;
-		*pc = addr;
+		(*pc) = addr;
 		break;
 	case 0x1c: // rcall
 		addr = inst->args[0]+*op;
 		writereg(c, pc, *sp);
 		(*sp)++;
-		*pc = addr;
+		(*pc) = addr;
 		break;
 	case 0x1d: // return
 		readreg(c, &addr, *sp);
 		(*sp)--;
-		*pc = addr;
+		(*pc) = addr;
 		break;
 	case 0x1f: // halt
 		cpuhalt();
@@ -338,20 +338,26 @@ doscalarmathop(Cpu *c, Inst *inst)
 void
 fetchdecode(Cpu *c, Inst *inst)
 {
-	u32int *pc;
+	u32int (*pc);
+	u8int t;
 	u8int len;
 	u8int i;
 	u8int b[16];
 	
 	pc = getregister(c, PC);
 	// fetch the entire instruction
-	b[0] = c->memread(*pc++);
-	b[1] = c->memread(*pc++);
+	dprint(smprint("PC = %x", *pc));
+	b[0] = c->memread((*pc)++);
+	b[1] = c->memread((*pc)++);
 	len = (b[0] & 0x0f)-2;
-	inst->type = b[0] & 0xf0;
+	t = b[0] & 0xf0;
+	inst->type = t >> 4;
 	inst->op = b[0];
+	dprint(smprint("inst->type = %x, len = %x, inst->op = %x", 
+			inst->type, len, inst->op));
 	for(i = 0; i < len; i++)
-		b[i] = c->memread(*pc++);
+		b[i] = c->memread(((*pc))++);
+	dprint("instruction decode");
 	switch(inst->type){
 	case 0xf:
 		switch(inst->op){
@@ -364,6 +370,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x0:
+		dprint("scalar memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -379,6 +386,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x1:
+		dprint("vector memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -398,6 +406,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x2:
+		dprint("jmp instruction");
 		switch(inst->op){
 		case 0x10:
 		case 0x11:
@@ -407,6 +416,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		case 0x1b:
 		case 0x1c:
 			inst->args[0] = b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3];
+			dprint(smprint("inst->args[0] = %x", inst->args[0]));
 			break;
 		case 0x12:
 		case 0x13:
@@ -429,11 +439,11 @@ fetchdecode(Cpu *c, Inst *inst)
 void
 startexec(Cpu *c, u32int startaddr)
 {
-	u32int *pc;
+	u32int (*pc);
 	Inst *inst;
 
 	pc = getregister(c, PC);
-	*pc = startaddr;
+	(*pc) = startaddr;
 	inst = malloc(sizeof(Inst));
 	if(!inst){
 		perror("failed malloc");
