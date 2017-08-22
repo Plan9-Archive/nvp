@@ -67,6 +67,7 @@ u8int memread(u32int);
 void memwrite(u8int*, u32int);
 
 // main.c
+extern Cpu *cpu0;
 void doimplop(Cpu*, Inst*);
 
 // cpu.c

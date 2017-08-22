@@ -163,6 +163,52 @@ dumplabels(void)
 }
 
 void
+dumpgens(void)
+{
+	E("dumpgens");
+	Instd *cur;
+	int i;
+
+	if(output == nil){
+		fprint(2, "no output to dump\n");
+		return;
+	}
+	for(cur = output; cur != nil; cur = cur->next){
+		fprint(2, "Instd (%p){\n", cur);
+		switch(cur->otype){
+		case 0:
+			fprint(2, "\tInst (%p){\n", cur->src);
+			fprint(2, "\t\tlen = %d,\n\tslen = %d,\n", cur->src->len, cur->src->slen);
+			fprint(2, "\t\traw = '%s',\n", cur->src->raw);
+			fprint(2, "\t\tinst = '%s',\n", cur->src->inst);
+			fprint(2, "\t\targs = {\n");
+			for(i = 0; i < (cur->src->slen-1); i++)
+				fprint(2, "\t\t\t[%d] = %s,\n", i, cur->src->args[i]);
+			fprint(2, "\t\t}\n");
+			fprint(2, "\t}\n");
+			fprint(2, "\t{ type = %x, len = %x }(header = %x)\n",
+					cur->type, cur->len, cur->len+cur->type);
+			fprint(2, "\tinst = %x\n", cur->inst);
+			fprint(2, "\targs = {\n");
+			for(i = 0; i < cur->len-2; i++)
+				fprint(2, "\t\t[%d] %x,\n", i, cur->args[i]);
+			fprint(2, "\t}\n");
+			break;
+		case 1:
+			fprint(2, "\tData (%p){ addr = %ux, dat = %ux, next = %p }\n",
+					cur->datsrc, cur->datsrc->addr, cur->datsrc->dat, cur->datsrc->next);
+			fprint(2, "\tdat = {\n");
+			for(i = 0; i < 4; i++)
+				fprint(2, "\t\t[%d] %x\n", i, cur->dat[i]);
+			fprint(2, "\t}\n");
+			break;
+		}
+		fprint(2, "\tnext = %p\n", cur->next);
+		fprint(2, "}\n");
+	}
+}
+
+void
 dumpall(void)
 {
 	dumpsrc();
@@ -322,7 +368,7 @@ handlepreproc(char *str)
 	}
 	if(strcmp(".vdata", toks[0]) == 0){
 		for(i = 1; i < toksl; i++)
-			adddata(strtoul(toks[i+1], nil, 16));
+			adddata(strtoul(toks[i], nil, 16));
 		return;
 	}
 }
@@ -409,6 +455,7 @@ encodeinst(Inst *inst)
 	einst->otype = 0;
 	einst->type = def->type;
 	einst->len = def->len;
+	einst->inst = def->op;
 	for(i = 0; i < (inst->slen-1); i++){
 		if(strlen(inst->args[i]) == 2){
 			einst->args[iaddr] = getreg(inst->args[i]);
@@ -418,6 +465,7 @@ encodeinst(Inst *inst)
 			iaddr += sizeof(u32int);
 		}
 	}
+	einst->src = inst;
 	return einst;
 }
 
@@ -430,6 +478,7 @@ encodedata(Data *d)
 	einst = emalloc(sizeof(Instd));
 	einst->otype = 1;
 	encode32int(d->dat, &einst->dat[0]);
+	einst->datsrc = d;
 	return einst;
 }
 
@@ -461,7 +510,7 @@ generateoutput(void)
 			curinst = curinst->next;
 		} else
 			break;
-		curinst = curinst->next;
+		curout = curout->next;
 	}
 	output = start->next;
 }
@@ -473,10 +522,9 @@ dumpoutput(int bf)
 	Instd *cur;
 	u8int tmp;
 
-	cur = output;
-	if(cur == nil)
+	if(output == nil)
 		panic("no output generated");
-	while(cur != nil){
+	for(cur = output; cur != nil; cur = cur->next){
 		switch(cur->otype){
 		case 0:
 			tmp = cur->type + cur->len;
@@ -536,8 +584,8 @@ main(int argc, char *argv[])
 		usage();
 
 	srcfd = Bopen(srcfile, OREAD);
-	outfd = open(outfile, OWRITE);
-	if(!srcfd || !outfd)
+	outfd = create(outfile, OWRITE|OTRUNC, 0660);
+	if(!srcfd || outfd < 0)
 		panic("could not open src or output files");
 	
 	for(;;){
@@ -547,9 +595,9 @@ main(int argc, char *argv[])
 		if(st == -1)
 			panic("general read error");
 	}
-	dumpall();
-	panic("not continuing");
+	if(debug) dumpall();
 	generateoutput();
+	if(debug) dumpgens();
 	if(dumpoutput(outfd) != 0)
 		panic("could not dump the assembled file");
 	Bterm(srcfd);

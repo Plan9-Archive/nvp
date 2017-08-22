@@ -3,6 +3,8 @@
 #include <thread.h>
 #include "cpu.h"
 
+Cpu *cpu0;
+
 char *regnames[] = {
 	// gp registers
 	[R0] "R0", [R1] "R1", [R2] "R2", [R3] "R3",
@@ -71,7 +73,6 @@ threadmain(int argc, char *argv[])
 	char *fname = nil;
 	int fd;
 	vlong flen;
-	Cpu *cpu0;
 
 	ARGBEGIN{
 	case 'f':
