@@ -31,6 +31,7 @@ struct Instd {
 	u8int inst;
 	u8int args[14];
 	u8int dat[4];
+	u32int addr;
 	Inst *src;
 	Data *datsrc;
 	Instd *next;

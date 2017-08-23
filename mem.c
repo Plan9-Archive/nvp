@@ -21,9 +21,8 @@ meminit(u32int len)
 void
 memaccess_fail(void)
 {
-	perror("bad memory access");
 	fprint(2, "PC = %x, lastacc = %x (max = %x)\n", cpu0->c_regs[PC], lastacc, memlen);
-	threadexitsall("bad memory access");
+	panic("bad memory access");
 }
 
 u8int

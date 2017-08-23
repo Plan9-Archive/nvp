@@ -25,15 +25,21 @@ clean:V:
 
 all:V: $TARG test.vx
 
-$O.nvp: cpu.$O vcpu.$O mem.$O main.$O debug.$O
-	$LD $LDFLAGS -o $O.nvp $prereq
+$O.nvp: cpu.$O vcpu.$O mem.$O main.$O debug.$O cpu.h regs.h inst.h vpasm.h
+	$LD $LDFLAGS -o $O.nvp cpu.$O vcpu.$O mem.$O main.$O debug.$O
 
 $O.vpasm: vpasm.$O regs.h inst.h vpasm.h
 	$LD $LDFLAGS -o $O.vpasm vpasm.$O
+
+runtestdl:V: $O.vpasm $O.nvp test.vx
+	./$O.nvp -d -f test.vx -i 50
+
+runtest:V: $O.vpasm $O.nvp test.vx
+	./$O.nvp -f test.vx
 
 vpasm:V: $O.vpasm
 
 nvp:V: $O.nvp
 
 asmtest:V: $O.vpasm
-	./$O.vpasm -d -s $stem.vs -o $stem.vx
+	./$O.vpasm -d -s test.vs -o test.vx

@@ -82,15 +82,19 @@ execute(Cpu *c, Inst *inst)
 		break;
 	case 0x1:
 	case 0x4:
+		dprint("dovectorop call");
 		sendvectop(c, inst);
 		break;
 	case 0x0:
+		dprint("dovectorop call");
 		doscalarmemop(c, inst);
 		break;
 	case 0x2:
+		dprint("dovectorop call");
 		docontrolop(c, inst);
 		break;
 	case 0x3:
+		dprint("dovectorop call");
 		doscalarmathop(c, inst);
 		break;
 	}
@@ -189,17 +193,21 @@ docontrolop(Cpu *c, Inst *inst)
 	switch(inst->op){
 	case 0x10: // jmp
 		(*pc) = inst->args[0];
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x11: // rjmp
 		(*pc) = *op+inst->args[0];
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x12: // jmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *reg1;
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x13: // rjmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *op+*reg1;
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x14: // clrf
 		*fl = 0;
@@ -210,6 +218,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x16: // crjmp
 		addr = inst->args[0]+*op;
@@ -217,6 +226,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x17: // cjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -225,6 +235,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x18: // crjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -233,10 +244,12 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x19: // setsys
 		addr = inst->args[0];
 		*sy = addr;
+		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x1a: // syscall
 		addr = *sy;
@@ -348,15 +361,18 @@ fetchdecode(Cpu *c, Inst *inst)
 	// fetch the entire instruction
 	dprint(smprint("PC = %x", *pc));
 	b[0] = c->memread((*pc)++);
+	dprint(smprint("PC (first fetch) = %x", *pc));
 	b[1] = c->memread((*pc)++);
+	dprint(smprint("PC (second fetch) = %x", *pc));
+	dprint(smprint("b[0] = %x, b[1] = %x", b[0], b[1]));
 	len = (b[0] & 0x0f)-2;
 	t = b[0] & 0xf0;
 	inst->type = t >> 4;
-	inst->op = b[0];
+	inst->op = b[1];
 	dprint(smprint("inst->type = %x, len = %x, inst->op = %x", 
 			inst->type, len, inst->op));
 	for(i = 0; i < len; i++)
-		b[i] = c->memread(((*pc))++);
+		b[i] = c->memread((*pc)++);
 	dprint("instruction decode");
 	switch(inst->type){
 	case 0xf:
@@ -433,6 +449,10 @@ fetchdecode(Cpu *c, Inst *inst)
 		if(inst->op >= 0x13)
 			inst->args[2] = b[2];
 		break;
+	default:
+		dprint(smprint("inst->type = %x, inst->op = %x", inst->type, inst->op));
+		panic("unknown instruction");
+		break;
 	}
 }
 
@@ -450,12 +470,17 @@ startexec(Cpu *c, u32int startaddr)
 		threadexitsall("failed malloc");
 	}
 	for(;;){
+		if(c->icount > c->ilimit){
+			fprint(2, "%s: cycle limit reached\n", argv0);
+			cpuhalt();
+		}
 		if(c->pause == 1){
 			sleep(10);
 			continue;
 		}
 		fetchdecode(c, inst);
 		execute(c, inst);
+		c->icount++;
 	}
 }
 
@@ -471,6 +496,8 @@ makecpu(void)
 	}
 	c->memread = memread;
 	c->memwrite = memwrite;
+	c->ilimit = 0;
+	c->icount = 0;
 	return c;
 }
 

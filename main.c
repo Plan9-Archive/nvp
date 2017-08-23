@@ -62,14 +62,14 @@ doimplop(Cpu *c, Inst *inst)
 void
 usage(void)
 {
-	print("usage: nvp -f bin [-m memlen] [-s start]\n");
+	print("usage: nvp [-d] [-m memlen] [-s start] [-i cycle limit] -f bin\n");
 	threadexitsall("usage");
 }
 
 void
 threadmain(int argc, char *argv[])
 {
-	u32int mlen = 1048576, start = 0;
+	u32int mlen = 1048576, start = 0, ilimit = 0;
 	char *fname = nil;
 	int fd;
 	vlong flen;
@@ -83,6 +83,9 @@ threadmain(int argc, char *argv[])
 		break;
 	case 's':
 		start = atoi(EARGF(usage()));
+		break;
+	case 'i':
+		ilimit = atoi(EARGF(usage()));
 		break;
 	case 'd':
 		debug = 1;
@@ -114,6 +117,7 @@ threadmain(int argc, char *argv[])
 	}
 
 	cpu0 = makecpu();
+	cpu0->ilimit = ilimit;
 	startvectworker(cpu0);
 	startexec(cpu0, start);
 	// should never get here

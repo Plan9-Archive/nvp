@@ -34,6 +34,8 @@ struct Cpu {
 	Channel *vunit;
 	int pause;
 	int cont;
+	u32int icount;	// amount of instructions executed
+	u32int ilimit;  // halt at n cycles (0 = run forever)
 	// memory i/o
 	u8int (*memread)(u32int);
 	void (*memwrite)(u8int*, u32int);

@@ -29,6 +29,7 @@ vectworker(void *arg)
 	c = arg;
 	for(;;){
 		v = recvp(c->vunit);
+		dprint("vectworker entry");
 		if(v == nil)
 			sysfatal("vector unit failure: %r");
 		switch(v->inst){

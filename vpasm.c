@@ -17,7 +17,7 @@ char *panicfn;
 
 Instdef insts[] = {
 	// scalar mem
-		{"loads", CATSMEM, LOADS, 7},
+	{"loads", CATSMEM, LOADS, 7},
 	{"stores", CATSMEM, STORES, 7},
 	{"moves", CATSMEM, MOVES, 4},
 	{"rloads", CATSMEM, RLOADS, 4},
@@ -177,7 +177,7 @@ dumpgens(void)
 		fprint(2, "Instd (%p){\n", cur);
 		switch(cur->otype){
 		case 0:
-			fprint(2, "\tInst (%p){\n", cur->src);
+			fprint(2, "\tInst@%x (%p){\n", cur->addr, cur->src);
 			fprint(2, "\t\tlen = %d,\n\tslen = %d,\n", cur->src->len, cur->src->slen);
 			fprint(2, "\t\traw = '%s',\n", cur->src->raw);
 			fprint(2, "\t\tinst = '%s',\n", cur->src->inst);
@@ -499,13 +499,14 @@ generateoutput(void)
 	curaddr = 0;
 	for(;;){
 		if(curdat != nil && curdat->addr == curaddr){
-			DEBUG(smprint("encoding data: addr = %ud, dat = %ux", curdat->addr, curdat->dat));
+			DEBUG(smprint("encoding data: addr = %ux, dat = %ux", curdat->addr, curdat->dat));
 			curout->next = encodedata(curdat);
 			curaddr += sizeof(u32int);
 			curdat = curdat->next;
 		} else if(curinst != nil){
-			DEBUG(smprint("encoding inst: addr = %ud, inst = %s", curaddr, curinst->inst));
+			DEBUG(smprint("encoding inst: addr = %ux, inst = %s", curaddr, curinst->inst));
 			curout->next = encodeinst(curinst);
+			curout->next->addr = curaddr;
 			curaddr += curinst->len;
 			curinst = curinst->next;
 		} else
@@ -527,7 +528,9 @@ dumpoutput(int bf)
 	for(cur = output; cur != nil; cur = cur->next){
 		switch(cur->otype){
 		case 0:
+			DEBUG(smprint("writing at %x instruction '%s'", cur->addr, cur->src->raw));
 			tmp = cur->type + cur->len;
+			DEBUG(smprint("tmp = %x", tmp));
 			if(write(bf, &tmp, 1) < 1)
 				goto fail;
 			if(write(bf, &cur->inst, 1) < 1)
@@ -540,6 +543,8 @@ dumpoutput(int bf)
 			if(write(bf, &cur->dat[0], 4) < 4)
 				goto fail;
 			break;
+		default:
+			panic("unknown output list item");
 		}
 		cur = cur->next;
 	}

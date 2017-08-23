@@ -3,33 +3,53 @@
 #include <thread.h>
 #include "cpu.h"
 
+typedef struct {
+	char *str;
+	int pid;
+} Msg;
+
 int debug = 0;
 int dpid = 0;
 int dfpid = 0;
+int mpid = 0;
 Channel *diochan;
 Channel *dfreechan;
+Channel *allocchan;
 
 void
 dfreeworker(void*)
 {
-	void *ptr;
+	Msg *ptr;
 	for(;;){
 		ptr = recvp(dfreechan);
-		if(ptr)
-			free(ptr);
+		free(ptr->str);
+		free(ptr);
 	}
 }
 
 void
 dprintworker(void*)
 {
-	char *str;
+	Msg *m;
 	for(;;){
-		str = recvp(diochan);
-		if(str){
-			fprint(2, "debug: %s\n", str);
-			sendp(dfreechan, str);
+		m = recvp(diochan);
+		if(m){
+			fprint(2, "debug %d: %s\n", m->pid, m->str);
+			sendp(dfreechan, m);
 		}
+	}
+}
+
+void
+allocworker(void*)
+{
+	Msg *m;
+
+	for(;;){
+		m = malloc(sizeof(Msg));
+		if(!m)
+			panic("bad malloc");
+		sendp(allocchan, m);
 	}
 }
 
@@ -44,26 +64,34 @@ startdworkers(void)
 		dfreechan = chancreate(sizeof(void*), 10);
 		dfpid = proccreate(dfreeworker, nil, mainstacksize);
 	}
+	if(mpid == 0){
+		allocchan = chancreate(sizeof(void*), 10);
+		mpid = proccreate(allocworker, nil, mainstacksize);
+	}
 }
 
 void
 dprint(char *str)
 {
-	char *cstr;
+	Msg *m;
 
 	if(debug){
 		if(dpid == 0 || dfpid == 0)
 			startdworkers();
-		cstr = strdup(str);
-		if(cstr == nil)
+		m = recvp(allocchan);
+		if(!m)
 			panic("bad malloc");
-		sendp(diochan, str);
+		m->pid = getpid();
+		m->str = strdup(str);
+		if(m == nil)
+			panic("bad malloc");
+		sendp(diochan, m);
 	}
 }
 
 void
 panic(char *s)
 {
-	fprint(2, "panic: %s\n", s);
+	fprint(2, "panic %d: %s\n", getpid(), s);
 	threadexitsall(smprint("panic: %s", s));
 }
