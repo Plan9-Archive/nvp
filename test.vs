@@ -7,9 +7,11 @@
 .label vect2
 .vdata aaaa bbbb cccc dddd eeee ffff 1111 2222
 
-; do 50000 of these operations
 .label numloops
+; do 50000 of these operations
 .data c350
+; do 100 of these operations
+;.data 64
 
 .label start
 	loadv v0 *vect1
@@ -24,10 +26,10 @@
 	subv v3 v0 v1
 	mulv v4 v0 v1
 	divv v5 v0 v1
-	bp
 	loadc r0 1
 	subs s0 s0 r0
 	jmp *loop
 .label done
+	bp
 	halt
 .eof

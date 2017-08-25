@@ -4,6 +4,8 @@
 #include "cpu.h"
 
 Cpu *cpu0;
+int haltonbp;
+int printonbp;
 
 char *regnames[] = {
 	// gp registers
@@ -34,7 +36,10 @@ doimplop(Cpu *c, Inst *inst)
 
 	switch(inst->op){
 	case 0x10: // bp
-		c->pause = 1;
+		if(haltonbp)
+			c->pause = 1;
+		if(printonbp)
+			dumpregs(cpu0);
 		break;
 	case 0x11: // print
  		addr = inst->args[0];
@@ -74,6 +79,7 @@ threadmain(int argc, char *argv[])
 	int fd;
 	vlong flen;
 
+	haltonbp = 0;
 	ARGBEGIN{
 	case 'f':
 		fname = strdup(EARGF(usage()));
@@ -90,6 +96,12 @@ threadmain(int argc, char *argv[])
 	case 'd':
 		debug = 1;
 		break;
+	case 'b':
+		haltonbp = 1;
+		break;
+	case 'p':
+		printonbp = 1;
+		break;
 	case 'h':
 		usage();
 		break;
@@ -102,19 +114,15 @@ threadmain(int argc, char *argv[])
 	if(fname == nil)
 		usage();
 	fd = open(fname, OREAD);
-	if(fd < 0){
-		fprint(2, "nvp: error opening binary\n");
-		threadexitsall("file open");
-	}
+	if(fd < 0)
+		panic("nvp: error opening binary");
 	flen = seek(fd, 0, 2);
 	seek(fd, 0, 0);
 
 	meminit(mlen);
 	vlong rst = readn(fd, &memory[start], flen);
-	if(rst < flen){
-		fprint(2, "nvp: short read: %ulld < %ulld: %r\n", rst, flen);
-		threadexitsall("short read");
-	}
+	if(rst < flen)
+		panic(smprint("short read: %ulld < %ulld: %r\n", rst, flen));
 
 	cpu0 = makecpu();
 	cpu0->ilimit = ilimit;

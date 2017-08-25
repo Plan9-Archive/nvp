@@ -2,7 +2,7 @@
 
 BIN=/$objtype/bin
 TARG=$O.nvp $O.vpasm
-OFILES=cpu.$O vcpu.$O mem.$O main.$O vpasm.$0 debug.$O
+OFILES=cpu.$O vcpu.$O mem.$O main.$O vpasm.$0 debug.$O debugger.$O
 HFILES=cpu.h regs.h inst.h vpasm.h
 ACIDFILES=cpu.acid vcpu.acid mem.acid main.acid
 
@@ -25,8 +25,8 @@ clean:V:
 
 all:V: $TARG test.vx
 
-$O.nvp: cpu.$O vcpu.$O mem.$O main.$O debug.$O cpu.h regs.h inst.h vpasm.h
-	$LD $LDFLAGS -o $O.nvp cpu.$O vcpu.$O mem.$O main.$O debug.$O
+$O.nvp: cpu.$O vcpu.$O mem.$O main.$O debug.$O debugger.$O cpu.h regs.h inst.h vpasm.h
+	$LD $LDFLAGS -o $O.nvp cpu.$O vcpu.$O mem.$O main.$O debug.$O debugger.$O
 
 $O.vpasm: vpasm.$O regs.h inst.h vpasm.h
 	$LD $LDFLAGS -o $O.vpasm vpasm.$O

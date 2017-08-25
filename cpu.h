@@ -1,17 +1,17 @@
 #include "regs.h"	// bad practice
 
 enum {
-	VECEQ,
-	VECGT,
-	VECLT,
-	VECADD,
-	VECSUB,
-	VECMUL,
-	VECDIV,
-	VECMOD,
-	VECLOAD,
-	VECSTORE,
-	VECCLR,
+	VECEQ = 1,
+	VECGT = 2,
+	VECLT = 3,
+	VECADD = 4,
+	VECSUB = 5,
+	VECMUL = 6,
+	VECDIV = 7,
+	VECMOD = 8,
+	VECLOAD = 9,
+	VECSTORE = 10,
+	VECCLR = 11,
 };
 
 typedef struct Cpu Cpu;
@@ -70,10 +70,11 @@ void memwrite(u8int*, u32int);
 
 // main.c
 extern Cpu *cpu0;
+extern char *regnames[];
 void doimplop(Cpu*, Inst*);
 
 // cpu.c
-Regr* _getregister(Cpu*, u32int);
+Regr _getregister(Cpu*, u32int);
 u32int* getregister(Cpu*, u32int);
 void fetchdecode(Cpu*, Inst*);
 void execute(Cpu*, Inst*);
@@ -101,3 +102,6 @@ void sendvectmathop(Cpu*, Inst*);
 extern int debug;
 void dprint(char*);
 void panic(char*);
+
+//debugger.c
+void dumpregs(Cpu*);

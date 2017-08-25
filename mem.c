@@ -14,8 +14,7 @@ meminit(u32int len)
 	memlen = len;
 	if(memory)
 		return;
-	perror("main memory alloc failed");
-	threadexitsall("main memory alloc failed");
+	panic("main memory alloc failed");
 }
 
 void

@@ -540,13 +540,13 @@ dumpoutput(int bf)
 					goto fail;
 			break;
 		case 1:
+			DEBUG(smprint("writing data at %x", cur->addr));
 			if(write(bf, &cur->dat[0], 4) < 4)
 				goto fail;
 			break;
 		default:
 			panic("unknown output list item");
 		}
-		cur = cur->next;
 	}
 	return 0;
 fail:

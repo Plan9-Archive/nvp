@@ -5,6 +5,8 @@
 #include <thread.h>
 #include "cpu.h"
 
+Channel *cpool[VECLEN];
+
 void
 readvect(Cpu *c, Vect *v, u32int addr)
 {
@@ -29,9 +31,10 @@ vectworker(void *arg)
 	c = arg;
 	for(;;){
 		v = recvp(c->vunit);
-		dprint("vectworker entry");
+//		dprint("vectworker entry");
 		if(v == nil)
-			sysfatal("vector unit failure: %r");
+			panic(smprint("vector unit failure: %r"));
+//		dprint(smprint("v->inst = %x, v->reply = %p", v->inst, v->reply));
 		switch(v->inst){
 		case VECEQ:
 			tmp = *v->src1 == *v->src2 ? 1 : 0;
@@ -54,7 +57,7 @@ vectworker(void *arg)
 			send(v->reply, &tmp);
 			break;
 		case VECMUL:
-			*v->dest = *v->src1 + *v->src2;
+			*v->dest = *v->src1 * *v->src2;
 			send(v->reply, &tmp);
 			break;
 		case VECDIV:
@@ -72,8 +75,7 @@ vectworker(void *arg)
 			send(v->reply, &tmp);
 			break;
 		default:
-			sysfatal("unknown vector instruction");
-			threadexitsall("unknown vector instruction");
+			panic("unknown vector instruction");
 			break;
 		}
 		tmp = 1;
@@ -90,11 +92,15 @@ startvectworker(Cpu *c)
 	qlock(c);
 	ch = chancreate(sizeof(Vinst*), VECLEN);
 	if(ch == nil){
-		perror("chancreate failed");
-		threadexitsall("chancreate failure");
+		panic("chancreate failed");
 	}
 	c->vunit = ch;
 	arg = c;
+	for(i = 0; i < VECLEN; i++){
+		cpool[i] = chancreate(sizeof(u32int), 0);
+		if(cpool[i] == nil)
+			panic("chancreate failed");
+	}
 	for(i = 0; i < VECLEN; i++)
 		proccreate(vectworker, arg, mainstacksize);
 	qunlock(c);
@@ -103,12 +109,11 @@ startvectworker(Cpu *c)
 Vect*
 getvreg(Cpu *c, u32int regn)
 {
-	Regr *r;
+	Regr r;
 	Vect *rval;
 
 	r = _getregister(c, regn);
-	rval = r->type == 1 ? r->v : nil;
-	free(r);
+	rval = r.type == 1 ? r.v : nil;
 	return rval;
 }
 
@@ -117,27 +122,26 @@ sendvectop(Cpu *c, Inst *inst)
 {
 	switch(inst->type){
 	case 0x1:
+//		dprint("sendvectmemop call");
 		sendvectmemop(c, inst);
+		break;
 	case 0x4:
+//		dprint("sendvectmathop call");
 		sendvectmathop(c, inst);
+		break;
 	}
 }
 
 void
 sendvectmathop(Cpu *c, Inst *inst)
 {
-	Vinst *v;
+	Vinst v[VECLEN];
 	Vect *src1 = nil, *src2 = nil, *dest = nil;
 	u32int *fl;
 	int i, ins = 0;
 	int rval, tmp;
 
 	fl = getregister(c, FL);
-	v = malloc(sizeof(Vinst)*VECLEN);
-	if(!v){
-		perror("malloc failed");
-		threadexitsall("malloc failed");
-	}
 	switch(inst->op){
 	case 0x10: // eqv
 		ins = VECEQ;
@@ -191,13 +195,12 @@ sendvectmathop(Cpu *c, Inst *inst)
 		v[i].dest = &dest->dat[i];
 		v[i].src1 = &src1->dat[i];
 		v[i].src2 = &src2->dat[i];
-		v[i].reply = chancreate(sizeof(u32int), 0);
+		v[i].reply = cpool[i];
 		sendp(c->vunit, &v[i]);
 	}
 	rval = 0;
 	for(i = 0; i < VECLEN; i++){
 		recv(v[i].reply, &tmp);
-		chanclose(v[i].reply);
 		rval += tmp;
 	}
 	switch(ins){
@@ -210,10 +213,9 @@ sendvectmathop(Cpu *c, Inst *inst)
 		if(rval < 0)
 			fprint(2, "nvp: vector unit: divide by zero\n");
 		if(rval < 0 && c->cont == 0)
-			threadexitsall("vector unit: divide by zero");
+			panic("vector unit: divide by zero");
 		break;
 	}
-	free(v);
 }
 
 void

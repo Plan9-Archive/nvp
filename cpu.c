@@ -3,17 +3,12 @@
 #include <thread.h>
 #include "cpu.h"
 
-Regr*
+Regr
 _getregister(Cpu *c, u32int regn)
 {
-	Regr *r;
+	Regr r;
 	u8int tmp;
 
-	r = malloc(sizeof(Regr));
-	if(!r){
-		perror("malloc failed");
-		threadexitsall("malloc failed");
-	}
 	switch(regn){
 	case R0:
 	case R1:
@@ -32,8 +27,8 @@ _getregister(Cpu *c, u32int regn)
 	case S6:
 	case S7:
 		tmp = regn - 0x10;
-		r->type = 0;
-		r->s = &c->g_regs[tmp];
+		r.type = 0;
+		r.s = &c->g_regs[tmp];
 		break;
 	case V0:
 	case V1:
@@ -44,8 +39,8 @@ _getregister(Cpu *c, u32int regn)
 	case V6:
 	case V7:
 		tmp = regn - 0x20;
-		r->type = 1;
-		r->v = &c->v_regs[tmp];
+		r.type = 1;
+		r.v = &c->v_regs[tmp];
 		break;
 	case OP:
 	case PC:
@@ -53,8 +48,8 @@ _getregister(Cpu *c, u32int regn)
 	case FL:
 	case SY:
 		tmp = regn - 0x30;
-		r->type = 2;
-		r->s = &c->c_regs[tmp];
+		r.type = 2;
+		r.s = &c->c_regs[tmp];
 		break;
 	}
 	return r;
@@ -63,13 +58,12 @@ _getregister(Cpu *c, u32int regn)
 u32int*
 getregister(Cpu *c, u32int regn)
 {
-	Regr *r;
+	Regr r;
 	u32int *rval = nil;
 
 	r = _getregister(c, regn);
-	if(r->type == 0 || r->type == 2)
-		rval = r->s;
-	free(r);
+	if(r.type == 0 || r.type == 2)
+		rval = r.s;
 	return rval;
 }
 
@@ -82,19 +76,19 @@ execute(Cpu *c, Inst *inst)
 		break;
 	case 0x1:
 	case 0x4:
-		dprint("dovectorop call");
+//		dprint("dovectorop call");
 		sendvectop(c, inst);
 		break;
 	case 0x0:
-		dprint("dovectorop call");
+//		dprint("doscalarmemop call");
 		doscalarmemop(c, inst);
 		break;
 	case 0x2:
-		dprint("dovectorop call");
+//		dprint("docontrolop call");
 		docontrolop(c, inst);
 		break;
 	case 0x3:
-		dprint("dovectorop call");
+//		dprint("doscalarmathop call");
 		doscalarmathop(c, inst);
 		break;
 	}
@@ -193,21 +187,21 @@ docontrolop(Cpu *c, Inst *inst)
 	switch(inst->op){
 	case 0x10: // jmp
 		(*pc) = inst->args[0];
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x11: // rjmp
 		(*pc) = *op+inst->args[0];
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x12: // jmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *reg1;
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x13: // rjmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *op+*reg1;
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x14: // clrf
 		*fl = 0;
@@ -218,7 +212,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x16: // crjmp
 		addr = inst->args[0]+*op;
@@ -226,7 +220,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x17: // cjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -235,7 +229,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x18: // crjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -244,12 +238,12 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x19: // setsys
 		addr = inst->args[0];
 		*sy = addr;
-		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
+//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x1a: // syscall
 		addr = *sy;
@@ -351,7 +345,7 @@ doscalarmathop(Cpu *c, Inst *inst)
 void
 fetchdecode(Cpu *c, Inst *inst)
 {
-	u32int (*pc);
+	u32int *pc;
 	u8int t;
 	u8int len;
 	u8int i;
@@ -359,21 +353,21 @@ fetchdecode(Cpu *c, Inst *inst)
 	
 	pc = getregister(c, PC);
 	// fetch the entire instruction
-	dprint(smprint("PC = %x", *pc));
+//	dprint(smprint("PC = %x", *pc));
 	b[0] = c->memread((*pc)++);
-	dprint(smprint("PC (first fetch) = %x", *pc));
+//	dprint(smprint("PC (first fetch) = %x", *pc));
 	b[1] = c->memread((*pc)++);
-	dprint(smprint("PC (second fetch) = %x", *pc));
-	dprint(smprint("b[0] = %x, b[1] = %x", b[0], b[1]));
+//	dprint(smprint("PC (second fetch) = %x", *pc));
+//	dprint(smprint("b[0] = %x, b[1] = %x", b[0], b[1]));
 	len = (b[0] & 0x0f)-2;
 	t = b[0] & 0xf0;
 	inst->type = t >> 4;
 	inst->op = b[1];
-	dprint(smprint("inst->type = %x, len = %x, inst->op = %x", 
-			inst->type, len, inst->op));
+//	dprint(smprint("inst->type = %x, len = %x, inst->op = %x", 
+//			inst->type, len, inst->op));
 	for(i = 0; i < len; i++)
 		b[i] = c->memread((*pc)++);
-	dprint("instruction decode");
+//	dprint("instruction decode");
 	switch(inst->type){
 	case 0xf:
 		switch(inst->op){
@@ -386,7 +380,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x0:
-		dprint("scalar memory instruction");
+//		dprint("scalar memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -402,7 +396,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x1:
-		dprint("vector memory instruction");
+//		dprint("vector memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -422,7 +416,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x2:
-		dprint("jmp instruction");
+//		dprint("jmp instruction");
 		switch(inst->op){
 		case 0x10:
 		case 0x11:
@@ -432,7 +426,7 @@ fetchdecode(Cpu *c, Inst *inst)
 		case 0x1b:
 		case 0x1c:
 			inst->args[0] = b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3];
-			dprint(smprint("inst->args[0] = %x", inst->args[0]));
+//			dprint(smprint("inst->args[0] = %x", inst->args[0]));
 			break;
 		case 0x12:
 		case 0x13:
@@ -465,12 +459,10 @@ startexec(Cpu *c, u32int startaddr)
 	pc = getregister(c, PC);
 	(*pc) = startaddr;
 	inst = malloc(sizeof(Inst));
-	if(!inst){
-		perror("failed malloc");
-		threadexitsall("failed malloc");
-	}
+	if(!inst)
+		panic("failed malloc");
 	for(;;){
-		if(c->icount > c->ilimit){
+		if(c->icount > c->ilimit && c->ilimit > 0){
 			fprint(2, "%s: cycle limit reached\n", argv0);
 			cpuhalt();
 		}
@@ -490,10 +482,8 @@ makecpu(void)
 	Cpu *c;
 
 	c = mallocz(sizeof(Cpu), 1);
-	if(c == nil){
-		perror("failed malloc");
-		threadexitsall("failed malloc");
-	}
+	if(c == nil)
+		panic("bad malloc");
 	c->memread = memread;
 	c->memwrite = memwrite;
 	c->ilimit = 0;
@@ -505,5 +495,5 @@ void
 cpuhalt(void)
 {
 	fprint(2, "%s: cpu halted\n", argv0);
-	threadexitsall("halt");
+	threadexitsall(nil);
 }
