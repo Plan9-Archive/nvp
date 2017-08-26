@@ -2,6 +2,7 @@
 #include <libc.h>
 #include <thread.h>
 #include "cpu.h"
+#include "devs.h"
 
 Cpu *cpu0;
 int haltonbp;
@@ -74,9 +75,10 @@ usage(void)
 void
 threadmain(int argc, char *argv[])
 {
-	u32int mlen = 1048576, start = 0, ilimit = 0;
+	u32int mlen = 1048576, start = 0, ilimit = 0, disklen;
 	char *fname = nil;
-	int fd;
+	char *diskname = nil;
+	int fd, dfd;
 	vlong flen;
 
 	haltonbp = 0;
@@ -92,6 +94,9 @@ threadmain(int argc, char *argv[])
 		break;
 	case 'i':
 		ilimit = atoi(EARGF(usage()));
+		break;
+	case 'l':
+		diskname = strdup(EARGF(usage()));
 		break;
 	case 'd':
 		debug = 1;
@@ -115,14 +120,23 @@ threadmain(int argc, char *argv[])
 		usage();
 	fd = open(fname, OREAD);
 	if(fd < 0)
-		panic("nvp: error opening binary");
+		panic("error opening boot image");
 	flen = seek(fd, 0, 2);
 	seek(fd, 0, 0);
+	if(diskname != nil){
+		dfd = open(diskname, OREAD|OWRITE);
+		if(dfd < 0)
+			panic("could no open disk");
+		disklen = seek(dfd, 0, 2);
+		seek(dfd, 0, 0);
+		initdisk(dfd, disklen);
+	}
 
 	meminit(mlen);
 	vlong rst = readn(fd, &memory[start], flen);
 	if(rst < flen)
 		panic(smprint("short read: %ulld < %ulld: %r\n", rst, flen));
+	consinit();
 
 	cpu0 = makecpu();
 	cpu0->ilimit = ilimit;

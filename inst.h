@@ -33,6 +33,8 @@ enum {
 	POP		= 0x16,
 	LOADC	= 0x17,
 	CLRS	= 0x18,
+	LOADB	= 0x19,
+	STOREB	= 0x1a,
 	// vector math
 	LOADV	= 0x10,
 	STOREV	= 0x11,

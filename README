@@ -68,6 +68,10 @@ type 0x0: scalar register instructions (catsmem)
 		reg = constant
 	0x18, 3: clrs reg
 		clear register
+	0x19, 7: loadb reg address
+		loads a byte at address into register
+	0x1a, 7: storeb reg address
+		stores the low byte of a register to address
 
 type 0x1: vector register instructions (catvmem)
 	0x10, 7: loadv vreg address
@@ -159,3 +163,34 @@ note: vector math does not support overflows
 		reg1 = reg2 / reg3
 	0x17, 5: modv reg1 reg2 reg3
 		reg1 = reg2 % reg3
+
+
+Devices:
+All addresses about 0xffffff00 are devices. (addr & 0x000000f0 >> 8) is the device
+address and (addr & 0x0000000f) is a device control address.
+say:
+	byte *dev = (byte*)0xffffffn0; // n is the device address
+	
+	dev[0] is the device 'read' and 'write' register
+	dev[1] is the status and command register
+	dev[2:15] is the 'device memory' area (byte *dmem = &dev[2])
+
+Default devices:
+	Device 0: console
+		dev[0] read will read a byte if available. 0 if none are available
+		dev[0] write will put a byte on the console screen
+		dev[1] is unused
+		dmem is unused.
+
+	Device 1: 'disk' storage
+		dev[0] is unused
+		dev[1] read will get current status. 0 if nothing new
+		dev[1] write will write a command to the device
+		dev[2] is used:
+			u32int *disk_addr = &dev[2]
+			u32int *mem_addr = &dev[6]
+			u8int *len = &dev[10]
+			disk_addr is the address on disk for the read/write operation
+			mem_addr is the memory location where the data to be written to
+			the disk is or where the data read from the disk should be put.
+			len is the length of the read or write.

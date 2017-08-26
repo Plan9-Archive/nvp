@@ -20,6 +20,8 @@ void
 dfreeworker(void*)
 {
 	Msg *ptr;
+
+	threadsetname("nvp vm dfree worker");
 	for(;;){
 		ptr = recvp(dfreechan);
 		free(ptr->str);
@@ -31,6 +33,8 @@ void
 dprintworker(void*)
 {
 	Msg *m;
+
+	threadsetname("nvp vm dprint worker");
 	for(;;){
 		m = recvp(diochan);
 		if(m){
@@ -45,6 +49,7 @@ allocworker(void*)
 {
 	Msg *m;
 
+	threadsetname("nvp vm dalloc worker");
 	for(;;){
 		m = malloc(sizeof(Msg));
 		if(!m)

@@ -122,6 +122,7 @@ doscalarmemop(Cpu *c, Inst *inst)
 {
 	u32int *reg1, *reg2;
 	u32int addr;
+	u8int tmp[4];
 
 	switch(inst->op){
 	case 0x10: // loads
@@ -168,6 +169,22 @@ doscalarmemop(Cpu *c, Inst *inst)
 	case 0x18: // clrs
 		reg1 = getregister(c, inst->args[0]);
 		*reg1 = 0;
+		break;
+	case 0x19: // loadb
+		reg1 = getregister(c, inst->args[0]);
+		addr = inst->args[1];
+		tmp[3] = c->memread(addr);
+		tmp[0] = tmp[1] = tmp[2] = 0;
+		*reg1 = tmp[0]<<24 | tmp[1]<<16 | tmp[2]<<8 | tmp[3];
+		break;
+	case 0x1a: // storeb
+		reg1 = getregister(c, inst->args[0]);
+		addr = inst->args[1];
+		tmp[0] = *reg1>>24 & 0xff;
+		tmp[1] = *reg1>>16 & 0xff;
+		tmp[2] = *reg1>>8 & 0xff;
+		tmp[3] = *reg1 & 0xff;
+		c->memwrite(&tmp[3], addr);
 		break;
 	}
 }

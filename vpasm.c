@@ -25,6 +25,8 @@ Instdef insts[] = {
 	{"push", CATSMEM, PUSH, 3},
 	{"pop", CATSMEM, POP, 3},
 	{"loadc", CATSMEM, LOADC, 7},
+	{"loadb", CATSMEM, LOADB, 7},
+	{"storeb", CATSMEM, STOREB, 7},
 	// vector mem
 	{"clrs", CATSMEM, CLRS, 3},
 	{"loadv", CATVMEM, LOADV, 7},

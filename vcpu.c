@@ -6,6 +6,8 @@
 #include "cpu.h"
 
 Channel *cpool[VECLEN];
+int p;
+QLock il;
 
 void
 readvect(Cpu *c, Vect *v, u32int addr)
@@ -29,6 +31,10 @@ vectworker(void *arg)
 	Cpu *c;
 
 	c = arg;
+	qlock(&il);
+	threadsetname("nvp thread worker %d", p);
+	p++;
+	qunlock(&il);
 	for(;;){
 		v = recvp(c->vunit);
 //		dprint("vectworker entry");
@@ -101,6 +107,7 @@ startvectworker(Cpu *c)
 		if(cpool[i] == nil)
 			panic("chancreate failed");
 	}
+	p = 1;
 	for(i = 0; i < VECLEN; i++)
 		proccreate(vectworker, arg, mainstacksize);
 	qunlock(c);
