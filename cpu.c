@@ -47,6 +47,9 @@ _getregister(Cpu *c, u32int regn)
 	case SP:
 	case FL:
 	case SY:
+	case TI:
+	case TR:
+	case TL:
 		tmp = regn - 0x30;
 		r.type = 2;
 		r.s = &c->c_regs[tmp];
@@ -194,31 +197,30 @@ docontrolop(Cpu *c, Inst *inst)
 {
 	u32int *reg1;
 	u32int addr;
-	u32int *sp, *sy, *fl, (*pc), *op;
+	u32int *sp, *sy, *fl, *pc, *op, *ti, *tr, *tl;
 
 	sp = getregister(c, SP);
 	sy = getregister(c, SY);
 	fl = getregister(c, FL);
 	pc = getregister(c, PC);
 	op = getregister(c, OP);
+	ti = getregister(c, TI);
+	tr = getregister(c, TR);
+	tl = getregister(c, TL);
 	switch(inst->op){
 	case 0x10: // jmp
 		(*pc) = inst->args[0];
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x11: // rjmp
 		(*pc) = *op+inst->args[0];
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x12: // jmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *reg1;
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x13: // rjmpr
 		reg1 = getregister(c, inst->args[0]);
 		(*pc) = *op+*reg1;
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x14: // clrf
 		*fl = 0;
@@ -229,7 +231,6 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x16: // crjmp
 		addr = inst->args[0]+*op;
@@ -237,7 +238,6 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x17: // cjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -245,8 +245,6 @@ docontrolop(Cpu *c, Inst *inst)
 		if(*fl > 0){
 			*fl = 0;
 			(*pc) = addr;
-		}
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x18: // crjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -255,12 +253,10 @@ docontrolop(Cpu *c, Inst *inst)
 			*fl = 0;
 			(*pc) = addr;
 		}
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x19: // setsys
 		addr = inst->args[0];
 		*sy = addr;
-//		dprint(smprint("jmp: PC = %x, inst->args[0] = %x", *pc, inst->args[0]));
 		break;
 	case 0x1a: // syscall
 		addr = *sy;
@@ -281,12 +277,26 @@ docontrolop(Cpu *c, Inst *inst)
 		(*pc) = addr;
 		break;
 	case 0x1d: // return
-		readreg(c, &addr, *sp);
-		(*sp)--;
-		(*pc) = addr;
+		if(c->intimerint){
+			c->intimerint = 0;
+			*pc = *tr;
+			*tr = 0;
+		} else {
+			readreg(c, &addr, *sp);
+			(*sp)--;
+			(*pc) = addr;
+		}
 		break;
 	case 0x1f: // halt
 		cpuhalt();
+		break;
+	case 0x20: // tstart
+		c->timeron = 1;
+		timerstart();
+		break;
+	case 0x21: // tstop
+		c->timeron = 0;
+		timerstop();
 		break;
 	}
 }
@@ -470,15 +480,18 @@ fetchdecode(Cpu *c, Inst *inst)
 void
 startexec(Cpu *c, u32int startaddr)
 {
-	u32int (*pc);
+	u32int *pc, *ti, *tr;
 	Inst *inst;
 
 	pc = getregister(c, PC);
+	ti = getregister(c, TI);
+	tr = getregister(c, TR);
 	(*pc) = startaddr;
 	inst = malloc(sizeof(Inst));
 	if(!inst)
 		panic("failed malloc");
 	for(;;){
+		qlock(c);
 		if(c->icount > c->ilimit && c->ilimit > 0){
 			fprint(2, "%s: cycle limit reached\n", argv0);
 			cpuhalt();
@@ -487,6 +500,16 @@ startexec(Cpu *c, u32int startaddr)
 			sleep(10);
 			continue;
 		}
+		if(c->alarm){
+			c->alarm = 0;
+			timerstop();
+			*tr = *pc;
+			*pc = *ti;
+			c->intimerint = 1;
+		}
+		if(c->timeractive && !c->timeron)
+			timerstart();
+		qunlock(c);
 		fetchdecode(c, inst);
 		execute(c, inst);
 		c->icount++;

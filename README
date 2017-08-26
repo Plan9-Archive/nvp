@@ -16,6 +16,9 @@ Registers:
 	sp			-- stack pointer (0x32)
 	fl			-- 32-bit condition register (0x33)
 	sy			-- syscall function address (0x34)
+	ti			-- timer interrupt routine pointer (0x35)
+	tr			-- timer interrupt return address (0x36)
+	tl			-- timer interval (0x37)
 note: the sx register set is conventionally used for arguments to
 	  subroutines.
 
@@ -124,6 +127,10 @@ type 0x2: control flow and other instructions (catctl)
 		pop pc
 	0x1f, 2: halt
 		halt execution (implementation specific. must be implemented)
+	0x20, 2: tstart
+		start timer
+	0x21, 2: tstop
+		stop timer
 
 type 0x3: scalar math (catsmath)
 	0x10, 4: eqs reg1 reg2

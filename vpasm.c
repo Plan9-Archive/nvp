@@ -54,6 +54,8 @@ Instdef insts[] = {
 	{"rcall", CATCTL, RCALL, 6},
 	{"return", CATCTL, RETURN, 2},
 	{"halt", CATCTL, HALT, 2},
+	{"tstart", CATCTL, TSTART, 2},
+	{"tstop", CATCTL, TSTOP, 2},
 	// scalar math
 	{"eqs", CATSMATH, EQS, 4},
 	{"gts", CATSMATH, GTS, 4},
@@ -86,7 +88,8 @@ char *regs[] = {
 	[S6] "s6", [S7] "s7",
 	[V0] "v0", [V1] "v1", [V2] "v2", [V3] "v3", [V4] "v4", [V5] "v5",
 	[V6] "v6", [V7] "v7",
-	[OP] "op", [PC] "pc", [SP] "sp", [FL] "fl", [SY] "sy",
+	[OP] "op", [PC] "pc", [SP] "sp", [FL] "fl", [SY] "sy", [TI] "ti",
+	[TR] "tr", [TL] "tl", [TC] "tc",
 };
 
 void

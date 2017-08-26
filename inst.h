@@ -62,6 +62,8 @@ enum {
 	RETURN	= 0x1d,
 	RCALLR	= 0x1e,
 	HALT	= 0x1f,
+	TSTART	= 0x20,
+	TSTOP	= 0x21,
 	// scalar math
 	EQS		= 0x10,
 	GTS		= 0x11,

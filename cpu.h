@@ -29,11 +29,15 @@ struct Cpu {
 	// the registers
 	u32int g_regs[16];
 	Vect v_regs[8];
-	u32int c_regs[5];
+	u32int c_regs[8];
 	// u32int op, pc, sp, sy, fl;
 	Channel *vunit;
 	int pause;
 	int cont;
+	int alarm;
+	int timeron;
+	int timeractive;
+	int intimerint;
 	u32int icount;	// amount of instructions executed
 	u32int ilimit;  // halt at n cycles (0 = run forever)
 	// memory i/o
