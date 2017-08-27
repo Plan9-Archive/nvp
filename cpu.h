@@ -40,6 +40,8 @@ struct Cpu {
 	int intimerint;
 	u32int icount;	// amount of instructions executed
 	u32int ilimit;  // halt at n cycles (0 = run forever)
+	Channel *alarmchan;
+	Channel *alarmcont;
 	// memory i/o
 	u8int (*memread)(u32int);
 	void (*memwrite)(u8int*, u32int);
@@ -91,6 +93,10 @@ void startexec(Cpu*, u32int);
 void cpuhalt(void);
 void startexec(Cpu*, u32int);
 Cpu* makecpu(void);
+void timerstart(Cpu*);
+void timerstop(Cpu*);
+void timerproc(void*);
+void alarmproc(void*);
 
 // vcpu.c
 void readvect(Cpu*, Vect*, u32int);

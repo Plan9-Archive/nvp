@@ -292,11 +292,11 @@ docontrolop(Cpu *c, Inst *inst)
 		break;
 	case 0x20: // tstart
 		c->timeron = 1;
-		timerstart();
+		timerstart(c);
 		break;
 	case 0x21: // tstop
 		c->timeron = 0;
-		timerstop();
+		timerstop(c);
 		break;
 	}
 }
@@ -502,13 +502,13 @@ startexec(Cpu *c, u32int startaddr)
 		}
 		if(c->alarm){
 			c->alarm = 0;
-			timerstop();
+			timerstop(c);
 			*tr = *pc;
 			*pc = *ti;
 			c->intimerint = 1;
 		}
 		if(c->timeractive && !c->timeron)
-			timerstart();
+			timerstart(c);
 		qunlock(c);
 		fetchdecode(c, inst);
 		execute(c, inst);
@@ -524,10 +524,18 @@ makecpu(void)
 	c = mallocz(sizeof(Cpu), 1);
 	if(c == nil)
 		panic("bad malloc");
-	c->memread = memread;
-	c->memwrite = memwrite;
-	c->ilimit = 0;
-	c->icount = 0;
+	*c = (Cpu){
+		.memread = memread,
+		.memwrite = memwrite,
+		.ilimit = 0,
+		.icount = 0,
+		.timeron = 0,
+		.alarm = 0,
+	};
+	c->alarmchan = chancreate(sizeof(void*), 0);
+	c->alarmcont = chancreate(sizeof(void*), 0);
+	proccreate(timerproc, c, mainstacksize);
+	proccreate(alarmproc, c, mainstacksize);
 	return c;
 }
 
@@ -536,4 +544,60 @@ cpuhalt(void)
 {
 	fprint(2, "%s: cpu halted\n", argv0);
 	threadexitsall(nil);
+}
+
+void
+alarmproc(void *arg)
+{
+	Cpu *c;
+	Channel *alarmchan, *alarmcont;
+	u32int *tl;
+	u32int interval;
+
+	c = arg;
+	alarmchan = c->alarmchan;
+	alarmcont = c->alarmcont;
+	threadsetname("cpu alarm worker");
+	tl = getregister(c, TL);
+	for(;;){
+		recvp(alarmcont);
+		interval = *tl;
+		sleep(interval);
+		nbsendp(alarmchan, nil);
+	}
+}
+
+void
+timerproc(void *arg)
+{
+	Cpu *c;
+
+	c = arg;
+	threadsetname("cpu timer worker");
+	for(;;){
+		if(c->timeron){
+			if(c->timeractive){
+				recvp(c->alarmchan);
+				if(c->timeron)
+					c->alarm = 1;
+				if(c->timeractive)
+					nbsendp(c->alarmcont, nil);
+			} else
+				sleep(1);
+		} else 
+			sleep(1);
+	}
+}
+
+void
+timerstart(Cpu *c)
+{
+	c->timeractive = 1;
+	nbsendp(c->alarmcont, nil);
+}
+
+void
+timerstop(Cpu *c)
+{
+	c->timeractive = 0;
 }
