@@ -1,4 +1,4 @@
-Crappy vm with vector instructions.
+Crappy vm with vector instructions for Plan 9.
 
 This VM is a simplified virtual machine based off of the z3vm design.
 It has both scalar and vector operations and a minimal instruction
@@ -22,7 +22,7 @@ Registers:
 note: the sx register set is conventionally used for arguments to
 	  subroutines.
 
-types:
+types: (vpasm doesn't use these, but are available for use if wanted)
 	# -- constant (in hex) (32-bits / 4 blocks)
 	$ -- address (32-bits / 4 blocks)
 	& -- scalar register (8-bits / 1 block)
@@ -171,9 +171,15 @@ note: vector math does not support overflows
 	0x17, 5: modv reg1 reg2 reg3
 		reg1 = reg2 % reg3
 
+Timer:
+	The timer is an interrupt that fires every tl milliseconds. When the timer
+fires, the timer is stopped, the pc is stored in tr, the pc is set to ti,
+and execution is continued. The routine has no limits on what it can do beyond
+restarting the timer. When the interrupt routine calls return, the pc is set to tr,
+the timer is restarted, and execution is continued.
 
-Devices:
-All addresses about 0xffffff00 are devices. (addr & 0x000000f0 >> 8) is the device
+Devices: (WIP)
+All addresses above 0xffffff00 are devices. (addr & 0x000000f0 >> 4) is the device
 address and (addr & 0x0000000f) is a device control address.
 say:
 	byte *dev = (byte*)0xffffffn0; // n is the device address

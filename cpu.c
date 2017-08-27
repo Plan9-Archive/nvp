@@ -197,16 +197,14 @@ docontrolop(Cpu *c, Inst *inst)
 {
 	u32int *reg1;
 	u32int addr;
-	u32int *sp, *sy, *fl, *pc, *op, *ti, *tr, *tl;
+	u32int *sp, *sy, *fl, *pc, *op, *tr;
 
 	sp = getregister(c, SP);
 	sy = getregister(c, SY);
 	fl = getregister(c, FL);
 	pc = getregister(c, PC);
 	op = getregister(c, OP);
-	ti = getregister(c, TI);
 	tr = getregister(c, TR);
-	tl = getregister(c, TL);
 	switch(inst->op){
 	case 0x10: // jmp
 		(*pc) = inst->args[0];
@@ -245,6 +243,7 @@ docontrolop(Cpu *c, Inst *inst)
 		if(*fl > 0){
 			*fl = 0;
 			(*pc) = addr;
+		}
 		break;
 	case 0x18: // crjmpr
 		reg1 = getregister(c, inst->args[0]);
@@ -524,14 +523,12 @@ makecpu(void)
 	c = mallocz(sizeof(Cpu), 1);
 	if(c == nil)
 		panic("bad malloc");
-	*c = (Cpu){
-		.memread = memread,
-		.memwrite = memwrite,
-		.ilimit = 0,
-		.icount = 0,
-		.timeron = 0,
-		.alarm = 0,
-	};
+	c->memread = memread;
+	c->memwrite = memwrite;
+	c->ilimit = 0;
+	c->icount = 0;
+	c->timeron = 0;
+	c->alarm = 0;
 	c->alarmchan = chancreate(sizeof(void*), 0);
 	c->alarmcont = chancreate(sizeof(void*), 0);
 	proccreate(timerproc, c, mainstacksize);
