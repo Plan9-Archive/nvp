@@ -79,19 +79,15 @@ execute(Cpu *c, Inst *inst)
 		break;
 	case 0x1:
 	case 0x4:
-//		dprint("dovectorop call");
 		sendvectop(c, inst);
 		break;
 	case 0x0:
-//		dprint("doscalarmemop call");
 		doscalarmemop(c, inst);
 		break;
 	case 0x2:
-//		dprint("docontrolop call");
 		docontrolop(c, inst);
 		break;
 	case 0x3:
-//		dprint("doscalarmathop call");
 		doscalarmathop(c, inst);
 		break;
 	}
@@ -395,21 +391,14 @@ fetchdecode(Cpu *c, Inst *inst)
 	
 	pc = getregister(c, PC);
 	// fetch the entire instruction
-//	dprint(smprint("PC = %x", *pc));
 	b[0] = c->memread((*pc)++);
-//	dprint(smprint("PC (first fetch) = %x", *pc));
 	b[1] = c->memread((*pc)++);
-//	dprint(smprint("PC (second fetch) = %x", *pc));
-//	dprint(smprint("b[0] = %x, b[1] = %x", b[0], b[1]));
 	len = (b[0] & 0x0f)-2;
 	t = b[0] & 0xf0;
 	inst->type = t >> 4;
 	inst->op = b[1];
-//	dprint(smprint("inst->type = %x, len = %x, inst->op = %x", 
-//			inst->type, len, inst->op));
 	for(i = 0; i < len; i++)
 		b[i] = c->memread((*pc)++);
-//	dprint("instruction decode");
 	switch(inst->type){
 	case 0xf:
 		switch(inst->op){
@@ -422,7 +411,6 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x0:
-//		dprint("scalar memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -442,7 +430,6 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x1:
-//		dprint("vector memory instruction");
 		inst->args[0] = b[0];
 		switch(inst->op){
 		case 0x10:
@@ -462,7 +449,6 @@ fetchdecode(Cpu *c, Inst *inst)
 		}
 		break;
 	case 0x2:
-//		dprint("jmp instruction");
 		switch(inst->op){
 		case 0x10:
 		case 0x11:
@@ -472,7 +458,6 @@ fetchdecode(Cpu *c, Inst *inst)
 		case 0x1b:
 		case 0x1c:
 			inst->args[0] = b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3];
-//			dprint(smprint("inst->args[0] = %x", inst->args[0]));
 			break;
 		case 0x12:
 		case 0x13:
