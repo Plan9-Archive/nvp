@@ -189,6 +189,22 @@ doscalarmemop(Cpu *c, Inst *inst)
 		tmp[3] = *reg1 & 0xff;
 		c->memwrite(&tmp[3], addr);
 		break;
+	case 0x1b: // rloadb
+		reg1 = getregister(c, inst->args[0]);
+		reg2 = getregister(c, inst->args[1]);
+		tmp[3] = c->memread(*reg2);
+		tmp[0] = tmp[1] = tmp[2] = 0;
+		*reg1 = tmp[0]<<24 | tmp[1]<<16 | tmp[2]<<8 | tmp[3];
+		break;
+	case 0x1c: //rstoreb
+		reg1 = getregister(c, inst->args[0]);
+		reg2 = getregister(c, inst->args[1]);
+		tmp[0] = *reg1>>24 & 0xff;
+		tmp[1] = *reg1>>16 & 0xff;
+		tmp[2] = *reg1>>8 & 0xff;
+		tmp[3] = *reg1 & 0xff;
+		c->memwrite(&tmp[3], *reg2);
+		break;
 	}
 }
 
@@ -412,11 +428,15 @@ fetchdecode(Cpu *c, Inst *inst)
 		case 0x10:
 		case 0x11:
 		case 0x17:
+		case 0x19:
+		case 0x1a:
 			inst->args[1] = b[1] << 24 | b[2] << 16 | b[3] << 8 | b[4];
 			break;
 		case 0x12:
 		case 0x13:
 		case 0x14:
+		case 0x1b:
+		case 0x1c:
 			inst->args[1] = b[1];
 			break;
 		}

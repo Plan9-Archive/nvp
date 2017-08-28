@@ -75,6 +75,10 @@ type 0x0: scalar register instructions (catsmem)
 		loads a byte at address into register
 	0x1a, 7: storeb reg address
 		stores the low byte of a register to address
+	0x1b, 4: rloadb reg1 reg2
+		loads the byte at the addresss in reg2 into reg1
+	0x1c, 4: rstoreb reg1 reg2
+		stores the low byte of reg1 at the address in reg2
 
 type 0x1: vector register instructions (catvmem)
 	0x10, 7: loadv vreg address

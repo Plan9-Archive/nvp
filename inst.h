@@ -35,6 +35,8 @@ enum {
 	CLRS	= 0x18,
 	LOADB	= 0x19,
 	STOREB	= 0x1a,
+	RLOADB	= 0x1b,
+	RSTOREB	= 0x1c,
 	// vector math
 	LOADV	= 0x10,
 	STOREV	= 0x11,
