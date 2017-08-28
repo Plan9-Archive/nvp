@@ -68,7 +68,7 @@ doimplop(Cpu *c, Inst *inst)
 void
 usage(void)
 {
-	print("usage: nvp [-d] [-m memlen] [-s start] [-i cycle limit] -f bin\n");
+	print("usage: nvp [-dbp] [-m memlen] [-s start] [-i cycle limit] [-l disk]  -f bin\n");
 	threadexitsall("usage");
 }
 
