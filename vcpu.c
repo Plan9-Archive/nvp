@@ -283,5 +283,11 @@ sendvectmemop(Cpu *c, Inst *inst)
 		for(i = 0; i < VECLEN; i++)
 			vdest->dat[i] = 0;
 		break;
+	case 0x18: // gather
+		vdest = getvreg(c, inst->args[0]);
+		vsrc = getvreg(c, inst->args[1]);
+		vsrc2 = getvreg(c, inst->args[2]);
+		for(int i = 0; i < VECLEN; i++)
+			vdest[
 	}
 }

@@ -97,6 +97,28 @@ type 0x1: vector register instructions (catvmem)
 		vreg1[reg3] = reg2
 	0x17, 3: clrv vreg
 		clear register
+	0x18, 5: gather vreg1 vreg2 vreg3
+		gather operation. vreg1 will contain the non-empty
+		elements of vreg2. vreg3 is the index vector.
+		for(int i = 0; i < VECLEN; i++)
+			vreg1[i] = vreg2[vreg3[i]];
+	0x19, 5: scatter vreg1 vreg2 vreg3
+		scatter operation. vreg1 will contain the sparse vector
+		and vreg2 contains the packed elements. vreg3 is the
+		index vector.
+		for(int i = 0; i < VECLEN; i++)
+			vreg1[vreg3[i]] = vreg2[i];
+	0x20, 7: idxcomp vreg1 vreg2 constant
+		computes the index vector for scatter/gather ops.
+		vreg1 is the index vector, vreg2 is the sparse vector,
+		the constant defines what empty means.
+		int j = 0;
+		for(int i = 0; i < VECLEN; i++){
+			if(vreg2[i] == constant){
+				vreg1[i] = j;
+				j++;
+			}
+		}
 
 type 0x2: control flow and other instructions (catctl)
 	0xff, 2: nop

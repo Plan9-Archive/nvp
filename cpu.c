@@ -443,8 +443,14 @@ fetchdecode(Cpu *c, Inst *inst)
 			break;
 		case 0x15:
 		case 0x16:
+		case 0x18:
+		case 0x19:
 			inst->args[1] = b[1];
 			inst->args[2] = b[2];
+			break;
+		case 0x20:
+			inst->args[1] = b[1];
+			inst->args[2] = b[2] << 24 | b[3] << 16 | b[4] << 8 | b[5];
 			break;
 		}
 		break;

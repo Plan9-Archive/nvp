@@ -37,7 +37,7 @@ enum {
 	STOREB	= 0x1a,
 	RLOADB	= 0x1b,
 	RSTOREB	= 0x1c,
-	// vector math
+	// vector mem
 	LOADV	= 0x10,
 	STOREV	= 0x11,
 	MOVEV	= 0x12,
@@ -46,6 +46,9 @@ enum {
 	RLOADSV	= 0x15,
 	RSTORESV= 0x16,
 	CLRV	= 0x17,
+	GATHER	= 0x18,
+	SCATTER = 0x19,
+	IDXCOMP = 0x20,
 	// control flow
 	NOP		= 0xff,
 	JMP		= 0x10,

@@ -39,6 +39,9 @@ Instdef insts[] = {
 	{"rloadsv", CATVMEM, RLOADSV, 5},
 	{"rstoresv", CATVMEM, RSTORESV, 5},
 	{"clrv", CATVMEM, CLRV, 3},
+	{"scatter", CATVMEM, SCATTER, 5},
+	{"gather", CATVMEM, GATHER, 5},
+	{"idxcomp", CATVMEM, IDXCOMP, 7},
 	// control flow
 	{"nop", CATCTL, NOP, 2},
 	{"jmp", CATCTL, JMP, 6},
