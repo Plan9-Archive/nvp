@@ -17,13 +17,13 @@ ACIDFILES=cpu.acid vcpu.acid mem.acid main.acid
 %.vx: $O.vpasm
 	./$O.vpasm -s $stem.vs -o $stem.vx
 
+all:V: $TARG test.vx
+
 nuke:V:
 	rm -f *.[$OS] [$OS].out y.tab.? lex.yy.c y.debug y.output *.vx $TARG $CLEANFILES
 
 clean:V:
 	rm -f *.[$OS] [$OS].out y.tab.? lex.yy.c y.debug y.output *.vx [$OS].nvp [$OS].vpasm $TARG $CLEANFILES
-
-all:V: $TARG test.vx
 
 $O.nvp: cpu.$O vcpu.$O mem.$O main.$O debug.$O debugger.$O console.$O disk.$O cpu.h regs.h inst.h vpasm.h
 	$LD $LDFLAGS -o $O.nvp cpu.$O vcpu.$O mem.$O main.$O debug.$O debugger.$O console.$O disk.$O
