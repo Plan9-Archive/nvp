@@ -41,7 +41,7 @@ Instdef insts[] = {
 	{"clrv", CATVMEM, CLRV, 3},
 	{"scatter", CATVMEM, SCATTER, 5},
 	{"gather", CATVMEM, GATHER, 5},
-	{"idxcomp", CATVMEM, IDXCOMP, 7},
+	{"idxcomp", CATVMEM, IDXCOMP, 5},
 	// control flow
 	{"nop", CATCTL, NOP, 2},
 	{"jmp", CATCTL, JMP, 6},
@@ -468,8 +468,15 @@ encodeinst(Inst *inst)
 	einst->inst = def->op;
 	for(i = 0; i < (inst->slen-1); i++){
 		if(strlen(inst->args[i]) == 2){
-			einst->args[iaddr] = getreg(inst->args[i]);
-			iaddr++;
+			// this is a bad hack to handle loadc. need better instruction
+			// decoding to put better logic in here
+			if(einst->inst != LOADC && i != 1){
+				einst->args[iaddr] = getreg(inst->args[i]);
+				iaddr++;
+			} else {
+				encode32int(strtoul(inst->args[i], nil, 16), &einst->args[iaddr]);
+				iaddr += sizeof(u32int);
+			}
 		} else {
 			encode32int(decodeaddr(inst->args[i]), &einst->args[iaddr]);
 			iaddr += sizeof(u32int);
@@ -489,6 +496,7 @@ encodedata(Data *d)
 	einst->otype = 1;
 	encode32int(d->dat, &einst->dat[0]);
 	einst->datsrc = d;
+	einst->addr = d->addr;
 	return einst;
 }
 
