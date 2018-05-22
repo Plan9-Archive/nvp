@@ -153,12 +153,12 @@ doscalarmemop(Cpu *c, Inst *inst)
 		reg1 = getregister(c, inst->args[0]);
 		reg2 = getregister(c, SP);
 		writereg(c, reg1, *reg2);
-		(*reg2)++;
+		(*reg2) += 4;;
 		break;
 	case 0x16: // pop
 		reg1 = getregister(c, inst->args[0]);
 		reg2 = getregister(c, SP);
-		(*reg2)--;
+		(*reg2) -= 4;
 		readreg(c, reg1, *reg2);
 		break;
 	case 0x17: // loadc
@@ -272,19 +272,19 @@ docontrolop(Cpu *c, Inst *inst)
 	case 0x1a: // syscall
 		addr = *sy;
 		writereg(c, pc, *sp);
-		(*sp)++;
+		*sp += 4;
 		(*pc) = *sy;
 		break;
 	case 0x1b: // call
 		addr = inst->args[0];
 		writereg(c, pc, *sp);
-		(*sp)++;
-		(*pc) = addr;
+		*sp += 4;
+		*pc = addr;
 		break;
 	case 0x1c: // rcall
 		addr = inst->args[0]+*op;
 		writereg(c, pc, *sp);
-		(*sp)++;
+		*sp += 4;
 		(*pc) = addr;
 		break;
 	case 0x1d: // return
@@ -294,7 +294,7 @@ docontrolop(Cpu *c, Inst *inst)
 			*tr = 0;
 		} else {
 			readreg(c, &addr, *sp);
-			(*sp)--;
+			(*sp) -= 4;
 			(*pc) = addr;
 		}
 		break;

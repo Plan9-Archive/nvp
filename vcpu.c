@@ -228,10 +228,10 @@ sendvectmathop(Cpu *c, Inst *inst)
 void
 sendvectmemop(Cpu *c, Inst *inst)
 {
-	Vect *vdest, *vsrc;
+	Vect *vdest, *vsrc, *vidx;
 	u32int *rsrc, *rsrc2, *rdest, *fl;
 	u32int addr;
-	int i;
+	u32int i, j;
 
 	fl = getregister(c, FL);
 	switch(inst->op){
@@ -286,8 +286,28 @@ sendvectmemop(Cpu *c, Inst *inst)
 	case 0x18: // gather
 		vdest = getvreg(c, inst->args[0]);
 		vsrc = getvreg(c, inst->args[1]);
-		vsrc2 = getvreg(c, inst->args[2]);
-		for(int i = 0; i < VECLEN; i++)
-			vdest[
+		vidx = getvreg(c, inst->args[2]);
+		for(i = 0; i < VECLEN; i++)
+			vdest->dat[i] = vsrc->dat[vidx->dat[i]];
+		break;
+	case 0x19: // scatter
+		vdest = getvreg(c, inst->args[0]);
+		vsrc = getvreg(c, inst->args[1]);
+		vidx = getvreg(c, inst->args[2]);
+		for(i = 0; i < VECLEN; i++)
+			vdest->dat[vidx->dat[i]] = vsrc->dat[i];
+		break;
+	case 0x20: // idxcomp
+		vdest = getvreg(c, inst->args[0]);
+		vsrc = getvreg(c, inst->args[1]);
+		rsrc = getregister(c, inst->args[2]);
+		j = 0;
+		for(i = 0; i < VECLEN; i++){
+			if(vsrc->dat[i] != *rsrc){
+				vdest->dat[i] = j;
+				j++;
+			}
+		}
+		break;
 	}
 }

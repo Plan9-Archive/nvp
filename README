@@ -108,13 +108,13 @@ type 0x1: vector register instructions (catvmem)
 		index vector.
 		for(int i = 0; i < VECLEN; i++)
 			vreg1[vreg3[i]] = vreg2[i];
-	0x20, 7: idxcomp vreg1 vreg2 constant
+	0x20, 5: idxcomp vreg1 vreg2 reg3
 		computes the index vector for scatter/gather ops.
 		vreg1 is the index vector, vreg2 is the sparse vector,
 		the constant defines what empty means.
 		int j = 0;
 		for(int i = 0; i < VECLEN; i++){
-			if(vreg2[i] == constant){
+			if(vreg2[i] != constant){
 				vreg1[i] = j;
 				j++;
 			}

@@ -92,7 +92,7 @@ dprint(char *str)
 			panic("bad malloc");
 		sendp(diochan, m);
 	}
-	free(str);		// smprint mallocs things moron. its what the m means!
+//	free(str);		// smprint mallocs things moron. its what the m means!
 }
 
 void
