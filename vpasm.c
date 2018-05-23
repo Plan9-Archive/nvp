@@ -587,6 +587,7 @@ main(int argc, char *argv[])
 	Biobuf *srcfd;
 	int outfd;
 	int st;
+	int spinend = 0;
 
 	ARGBEGIN{
 	case 'd':
@@ -597,6 +598,9 @@ main(int argc, char *argv[])
 		break;
 	case 'o':
 		outfile = strdup(EARGF(usage()));
+		break;
+	case 'u':
+		spinend = 1;
 		break;
 	case 'h':
 		usage();
@@ -625,5 +629,8 @@ main(int argc, char *argv[])
 		panic("could not dump the assembled file");
 	Bterm(srcfd);
 	close(outfd);
+	if(spinend)
+		for(;;)
+			sleep(1);
 	exits(nil);
 }
