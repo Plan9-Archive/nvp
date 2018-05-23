@@ -21,7 +21,7 @@
 	clrf
 	loadc r0 0
 	eqs s0 r0
-	cjmp *done
+	cjmp *doneloop
 	call *svadd
 	loadc r0 1
 	subs s0 s0 r0
@@ -29,6 +29,10 @@
 .label done
 	bp
 	halt
+.label doneloop
+	bp
+.label dloop
+	jmp *dloop
 ; throw 64 bytes of nothing in case things are buggered
 .vdata 0 0 0 0 0 0 0 0
 .vdata 0 0 0 0 0 0 0 0

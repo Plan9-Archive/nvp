@@ -6,6 +6,7 @@
 typedef struct {
 	char *str;
 	int pid;
+	int cmd;
 } Msg;
 
 int debug = 0;
@@ -38,8 +39,16 @@ dprintworker(void*)
 	for(;;){
 		m = recvp(diochan);
 		if(m){
-			fprint(2, "debug %d: %s\n", m->pid, m->str);
-			sendp(dfreechan, m);
+			if(m->cmd == 1){
+				fprint(2, "panic %d: %s\n", m->pid, m->str);
+				threadexitsall("panic");
+			}else if(m->cmd == 2){
+				fprint(2, "%s", m->str);
+				sendp(dfreechan, m);
+			} else {
+				fprint(2, "debug %d: %s\n", m->pid, m->str);
+				sendp(dfreechan, m);
+			}
 		}
 	}
 }
@@ -84,12 +93,17 @@ dprint(char *str)
 		if(dpid == 0 || dfpid == 0)
 			startdworkers();
 		m = recvp(allocchan);
-		if(!m)
+		if(!m){
+			debug = 0;
 			panic("bad malloc");
+		}
 		m->pid = getpid();
 		m->str = strdup(str);
-		if(m == nil)
+		if(m->str == nil){
+			debug = 0;
 			panic("bad malloc");
+		}
+		m->cmd = 0;
 		sendp(diochan, m);
 	}
 //	free(str);		// smprint mallocs things moron. its what the m means!
@@ -98,6 +112,28 @@ dprint(char *str)
 void
 panic(char *s)
 {
-	fprint(2, "panic %d: %s\n", getpid(), s);
-	threadexitsall(smprint("panic: %s", s));
+	Msg *m;
+
+	if(debug){
+		if(dpid == 0 || dfpid == 0)
+			startdworkers();
+		m = recvp(allocchan);
+		if(!m){
+			debug = 0;
+			panic("bad malloc");
+		}
+		m->pid = getpid();
+		m->str = strdup(s);
+		if(m->str == nil){
+			debug = 0;
+			panic("bad malloc");
+		}
+		m->cmd = 1;
+		sendp(diochan, m);
+		for(;;)
+			sleep(1);
+	} else {
+		fprint(2, "panic %d: %s\n", getpid(), s);
+		threadexitsall(smprint("panic: %s", s));
+	}
 }

@@ -12,3 +12,4 @@ syntax: glob
 6.out
 5.out
 test.rc
+*.acid

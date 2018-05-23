@@ -71,6 +71,7 @@ struct Regr {
 extern u8int *memory;
 extern u32int memlen;
 void meminit(u32int);
+void dmemdump(u32int);
 u8int memread(u32int);
 void memwrite(u8int*, u32int);
 

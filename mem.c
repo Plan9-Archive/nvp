@@ -31,11 +31,33 @@ memaccess_fail(void)
 	panic("bad memory access");
 }
 
+void
+dmemdump(u32int addr)
+{
+	char *s = nil, *os = nil;
+	int i;
+
+	USED(os);
+	dprint(smprint("memdump at %x", addr));
+	for(i = 0; i < 16; i++){
+		if(!s)
+			s = smprint("%x", memread(addr+i));
+		else{
+			os = s;
+			s = smprint("%s %x", os, memread(addr+i));
+			free(os);
+		}
+	}
+	dprint(s);
+}
+	
+
 u8int
 memread(u32int addr)
 {
 	u8int devn;
 
+	dprint(smprint("memory read at %x", addr));
 	lastacc = addr;
 	if(addr >= DEVSTART){
 		devn = (addr & 0xf0) >> 4;
@@ -50,6 +72,7 @@ memwrite(u8int *b, u32int addr)
 {
 	u8int devn;
 
+	dprint(smprint("memory write at %x", addr));
 	lastacc = addr;
 	if(addr >= DEVSTART){
 		devn = (addr & 0xf0) >> 4;

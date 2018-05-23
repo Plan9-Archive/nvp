@@ -219,7 +219,9 @@ docontrolop(Cpu *c, Inst *inst)
 	tr = getregister(c, TR);
 	switch(inst->op){
 	case 0x10: // jmp
+		dprint(smprint("pre jmp: args[0] = %x, pc = %x\n", inst->args[0], *pc));
 		(*pc) = inst->args[0];
+		dprint(smprint("post jmp: args[0] = %x, pc = %x\n", inst->args[0], *pc));
 		break;
 	case 0x11: // rjmp
 		(*pc) = *op+inst->args[0];
@@ -384,6 +386,7 @@ void
 fetchdecode(Cpu *c, Inst *inst)
 {
 	u32int *pc;
+	u32int curpc;
 	u8int t;
 	u8int len;
 	u8int i;
@@ -397,6 +400,8 @@ fetchdecode(Cpu *c, Inst *inst)
 	t = b[0] & 0xf0;
 	inst->type = t >> 4;
 	inst->op = b[1];
+	dprint(smprint("inst->type = %x, inst->op = %x, len = %x", inst->type, inst->op, len+2));
+	curpc = *pc;
 	for(i = 0; i < len; i++)
 		b[i] = c->memread((*pc)++);
 	switch(inst->type){
@@ -481,7 +486,7 @@ fetchdecode(Cpu *c, Inst *inst)
 			inst->args[2] = b[2];
 		break;
 	default:
-		dprint(smprint("inst->type = %x, inst->op = %x", inst->type, inst->op));
+		dprint(smprint("pc = %x, inst->type = %x, inst->op = %x", curpc, inst->type, inst->op));
 		panic("unknown instruction");
 		break;
 	}
@@ -520,7 +525,9 @@ startexec(Cpu *c, u32int startaddr)
 		if(c->timeractive && !c->timeron)
 			timerstart(c);
 		qunlock(c);
+		dprint(smprint("pc = %x", *pc));
 		fetchdecode(c, inst);
+		dprint("exec");
 		execute(c, inst);
 		c->icount++;
 	}
